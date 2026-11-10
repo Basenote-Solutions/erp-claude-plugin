@@ -3,7 +3,7 @@ name: erp-basics
 description: How to work in Base Note ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation). Also what no area skill covers - tasks on any record (the board, moving and blocking, checklists, comments, files, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, Claude connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
 ---
 
-# Base Note ERP: the basics
+# Base Note ERP: the essentials
 
 Base Note ERP covers CRM and quotes, private-label (PL)
 projects, sourcing, contract manufacturing, the lab and the Alchemy formulation engine, stock,
