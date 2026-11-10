@@ -1,0 +1,11 @@
+{
+  "name": "base-note",
+  "owner": { "name": "Base Note Solutions" },
+  "plugins": [
+    {
+      "name": "base-note-erp",
+      "source": "./base-note-erp",
+      "description": "Base Note ERP from Claude: the connector and its skills."
+    }
+  ]
+}
