@@ -20,6 +20,7 @@ History.
 | Who the user is, and what needs attention | `my_work` (their user id, timezone and business date; open tasks, unread notifications, Home widgets) |
 | Figures across records | `run_report` (no name: the catalogue and its parameters) |
 | Anything else | `find_operations` → `describe_operation` → `read` (GET) or `write` |
+| An area's rules and steps, when its skill is not loaded | `how_to` (topic = the skill's name) |
 | A PDF, attachment or export | `download_file`; to add one, `upload_file` then link it with `write` (a file you hold: give its `size`, run the answer's curl in your sandbox, then finish with `attachment_id`) |
 
 Area skills name the operations for each job: crm-and-quotes, pl-projects, sourcing,
