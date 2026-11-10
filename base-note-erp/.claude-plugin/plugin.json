@@ -1,0 +1,7 @@
+{
+  "name": "base-note-erp",
+  "description": "Work in Base Note ERP from Claude: search and open records, run reports, and create, edit and post across CRM and contracts, projects, tasks, sourcing, manufacturing, lab and Alchemy, stock, compliance and money, as yourself.",
+  "author": { "name": "Base Note Solutions" },
+  "license": "Proprietary",
+  "keywords": ["erp", "base-note", "alchemy", "perfume"]
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "base-note-erp": {
+      "type": "http",
+      "url": "https://staging-alchemy-api.basenotesolutions.com/mcp"
+    }
+  }
+}
