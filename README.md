@@ -5,8 +5,12 @@ ERP account: signing in and every permission are the ERP's.
 
 ## Install
 
-In claude.ai or Claude Desktop, open Customize, then Plugins, choose Add, then Add marketplace, and
-enter `Basenote-Solutions/erp-claude-plugin`. Install Base Note ERP and turn on Sync automatically.
+In claude.ai or Claude Desktop, open Customize, then Plugins, choose Add, Add marketplace, then Add
+from a repository, and enter `Basenote-Solutions/erp-claude-plugin`. Press Sync, then Add beside
+Base Note ERP.
+
+To take a newer version later: Add, Manage marketplaces, the menu beside erp-claude-plugin, Check
+for updates.
 
 In Claude Code:
 
