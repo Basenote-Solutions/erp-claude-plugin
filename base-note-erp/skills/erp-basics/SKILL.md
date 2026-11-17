@@ -5,7 +5,7 @@ description: How to work in Base Note ERP through its connector - which tool to 
 
 # Base Note ERP: the basics
 
-Base Note ERP covers CRM and quotes, private-label (PL)
+Base Note ERP covers CRM and quotes, marketing (AI Search Radar), private-label (PL)
 projects, sourcing, contract manufacturing, the lab and the Alchemy formulation engine, stock,
 compliance and light money (no ledger). Through the connector you act **as the signed-in user**:
 exactly their role's permissions, every change recorded under their name with "via Claude" in
@@ -23,9 +23,9 @@ History.
 | An area's rules and steps, when its skill is not loaded | `how_to` (topic = the skill's name) |
 | A PDF, attachment or export | `download_file`; to add one, `upload_file` then link it with `write` (a file you hold: give its `size`, run the answer's curl in your sandbox, then finish with `attachment_id`) |
 
-Area skills name the operations for each job: crm-and-quotes, pl-projects, sourcing,
-manufacturing, stock, lab-and-alchemy, compliance, money, reports; and the workflows
-lead-to-invoice, brief-to-formula, buy-to-stock, fill-to-ship.
+Area skills name the operations for each job: crm-and-quotes, marketing-radar, pl-projects,
+sourcing, manufacturing, stock, lab-and-alchemy, compliance, money, reports; and the
+workflows lead-to-invoice, brief-to-formula, buy-to-stock, fill-to-ship, radar-scan.
 
 ## Calling operations
 
