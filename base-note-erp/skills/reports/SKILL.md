@@ -1,6 +1,6 @@
 ---
 name: reports
-description: Covers Base Note ERP reports and dashboards. That means the reports catalogue (open pipeline, won and lost by source, project profit, revenue by service, stock value, outstanding payments, low stock, compliance outstanding, Radar's runs and cited pages, the accountant export), running a report inline, exporting a CSV, the Home dashboard widgets and the user's own preferences for them, and the This week page (what moved, what to chase, overdue tasks, payments due, and won, invoiced and received against last week). Use it when the user asks for a report, figures, totals, a summary, a CSV or spreadsheet export, what is owed or overdue, profit or margin, revenue, stock value, the pipeline value, what happened this week, what needs chasing, or what needs attention today.
+description: Covers BaseNote ERP reports and dashboards. That means the reports catalogue (open pipeline, won and lost by source, project profit, revenue by service, stock value, outstanding payments, low stock, compliance outstanding, Radar's runs and cited pages, the accountant export), running a report inline, exporting a CSV, the Home dashboard widgets and the user's own preferences for them, and the This week page (what moved, what to chase, overdue tasks, payments due, and won, invoiced and received against last week). Use it when the user asks for a report, figures, totals, a summary, a CSV or spreadsheet export, what is owed or overdue, profit or margin, revenue, stock value, the pipeline value, what happened this week, what needs chasing, or what needs attention today.
 ---
 
 # Reports, Home and This week
@@ -57,7 +57,7 @@ it is hidden rather than reporting 0.
 | `won_lost_by_source` | Deals closed in a range, by track and source, with the win rate and won and lost GBP | `date_from`*, `date_to`*, `track` |
 | `project_profit` | Per project: revenue (issued invoices, net, GBP) less stock used, services billed, expenses and project costs, giving profit and margin | `project`, `stage`, `client` |
 | `revenue_by_service` | Issued invoices per month and service, net, GBP | `date_from`*, `date_to`*, `service` (`pl`, `blend`, `alchemy`, `upsell`, `other`) |
-| `stock_value` | Base Note's own stock per item and location at average cost (client stock carries no value) | `location`, `item` |
+| `stock_value` | BaseNote's own stock per item and location at average cost (client stock carries no value) | `location`, `item` |
 | `outstanding_payments` | Issued invoices and posted bills not fully paid, with what is owed, owed in GBP and days overdue | `direction` (`receivable`: owed to us; `payable`: we owe) |
 | `low_stock` | Items below their reorder level, with on hand, reserved and available | none |
 | `compliance_outstanding` | Compliance documents Not started or In progress, by scope and project (cancelled projects left out) | `project`, `scope` (`project_sku`, `recipe`, `company`), `status` (`not_started`, `in_progress`) |

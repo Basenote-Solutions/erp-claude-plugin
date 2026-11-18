@@ -1,6 +1,6 @@
 ---
 name: buy-to-stock
-description: Step-by-step workflow in Base Note ERP from asking suppliers for prices to paying them - RFQ, supplier quotes, compare, award, purchase order, issue, shipment tracking, goods receipt into stock, bill from the PO, posting it and the payment out. Use when the user wants to buy materials, bottles, caps or packaging, get quotes from suppliers, order from the best one, receive a delivery or pay a supplier for an order.
+description: Step-by-step workflow in BaseNote ERP from asking suppliers for prices to paying them - RFQ, supplier quotes, compare, award, purchase order, issue, shipment tracking, goods receipt into stock, bill from the PO, posting it and the payment out. Use when the user wants to buy materials, bottles, caps or packaging, get quotes from suppliers, order from the best one, receive a delivery or pay a supplier for an order.
 ---
 
 # Workflow: from a request for quote to stock and the supplier paid

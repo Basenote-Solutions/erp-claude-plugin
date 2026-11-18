@@ -1,13 +1,13 @@
 ---
 name: stock
-description: Items and stock in Base Note ERP - items and materials with their identifiers (CAS, EC, INCI), pack-size unit conversions, documents and ids in other systems, units of measure, material types, product classes and inventory categories, locations, lots, stock on hand and moves, receiving, adjusting, transferring and issuing stock, reservations, low stock and reorder levels, and importing opening stock. Use when the user asks what is in stock or where, a lot or expiry, a stock count or correction, moving stock between the lab and a factory, reserving stock for a project, items below reorder level, loading opening stock, or adding or changing an item, its CAS number, pack size, unit, SDS or category.
+description: Items and stock in BaseNote ERP - items and materials with their identifiers (CAS, EC, INCI), pack-size unit conversions, documents and ids in other systems, units of measure, material types, product classes and inventory categories, locations, lots, stock on hand and moves, receiving, adjusting, transferring and issuing stock, reservations, low stock and reorder levels, and importing opening stock. Use when the user asks what is in stock or where, a lot or expiry, a stock count or correction, moving stock between the lab and a factory, reserving stock for a project, items below reorder level, loading opening stock, or adding or changing an item, its CAS number, pack size, unit, SDS or category.
 ---
 
 # Stock: items, locations, lots, postings and reservations
 
-Stock is what Base Note (or a client, for client-supplied oil) holds: at the lab, at each
+Stock is what BaseNote (or a client, for client-supplied oil) holds: at the lab, at each
 contract factory ("At factory: <name>"), in transit or at a client. Every change is a stock move
-that never changes; balances and the average cost follow from the moves. Base Note's own stock
+that never changes; balances and the average cost follow from the moves. BaseNote's own stock
 carries value at average cost; client-owned stock carries none.
 
 ## Records
@@ -21,7 +21,7 @@ carries value at average cost; client-owned stock carries none.
   lab-and-alchemy).
 - **Location** (code, name, kind lab, factory, in_transit, client or other; a party for a factory
   or client). Seeded LAB and TRANSIT.
-- **Lot** (item, lot number, expiry, owner: blank = Base Note), made when a lot-tracked item is
+- **Lot** (item, lot number, expiry, owner: blank = BaseNote), made when a lot-tracked item is
   first received under that number.
 - **Stock on hand**: per item, location, lot and owner: On hand, Reserved, Available; Average cost
   and Stock value only with `view_cost` and never on client-owned stock.
@@ -90,7 +90,7 @@ Stock and postings
 - `moves_list` (`item`, `location`, `lot`, `kind`, `group`, `source_type`/`source_id`, `from`/`to`
   dates): every move, newest first; `group` shows all lines of one posting.
 - `stock_receive_create` [key]: stock without a supplier document (found, gifts). Lot-tracked
-  items need `lot_no` (with its `expiry` when it has one); Base Note stock needs a `unit_cost`
+  items need `lot_no` (with its `expiry` when it has one); BaseNote stock needs a `unit_cost`
   (GBP per stock unit, `view_cost`); client stock names `owner` and takes no cost. Purchases
   arrive with a goods receipt instead (sourcing).
 - `stock_adjust_create` [key]: signed quantity (`"-5"` takes away) and a `reason`; a gain enters at
@@ -110,13 +110,13 @@ Reservations and low stock
   `reservation_not_active` once consumed or cancelled). A formula batch is reserved with
   `scale_ups_reserve_create` [key] (lab-and-alchemy).
 - Low stock: `stock_items_list` with `low=true`, or `run_report` `low_stock`; stock value:
-  `run_report` `stock_value` (`view_cost`). Low = Base Note on hand less reservations below the
+  `run_report` `stock_value` (`view_cost`). Low = BaseNote on hand less reservations below the
   item's reorder level; lab and admin users are notified when an item becomes low.
 
 Opening stock import
 - `import_types_list` shows the `opening_stock` template: columns `item` (code), `location` (code),
   `qty` (stock unit), `unit_cost` (GBP; blank for client-owned), `owner` (client's name; blank =
-  Base Note), `lot_no`, `expiry`. It posts one receipt. It needs `view_inventory`,
+  BaseNote), `lot_no`, `expiry`. It posts one receipt. It needs `view_inventory`,
   `manage_inventory` and `view_cost` (the file holds costs).
 - Steps: `upload_file` the CSV (`text`, content_type `text/csv`, doc_type `import`) →
   `imports_create` [key] (`attachment_id`, `import_type` `opening_stock`) → `imports_retrieve`
@@ -140,7 +140,7 @@ Opening stock import
   posting with 409 `insufficient_stock`; its details list each line's requested and available
   quantity, and nothing is written. Show them; never split the posting to force it through.
 - An adjustment, a release and an issue without a source need a `reason` (422 `reason_required`).
-  A receipt of Base Note stock without a `unit_cost`, or a gain on an item with no average cost
+  A receipt of BaseNote stock without a `unit_cost`, or a gain on an item with no average cost
   and no typed cost → 422 `cost_missing`.
 - An item's class never changes. Its stock unit is locked once it has stock moves (409
   `uom_locked`), and so are lot-tracked and stocked (409 `conflict`); before then, remove its
@@ -163,7 +163,7 @@ Opening stock import
 ## Pitfalls
 
 - Moves never change: a mistake is corrected by a new posting (adjustment or transfer).
-- A reservation without a lot holds Base Note stock; a client's oil is held only by naming its
+- A reservation without a lot holds BaseNote stock; a client's oil is held only by naming its
   lot. Client stock has no value.
 - Shipped or cancelled projects and completed or cancelled work orders cannot hold reservations.
 - `items_retrieve` shows no stock figures: read `stock_list` or `stock_items_list`.

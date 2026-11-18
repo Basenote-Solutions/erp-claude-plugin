@@ -1,6 +1,6 @@
 ---
 name: radar-scan
-description: Step-by-step workflow for adding evidence to AI Search Radar in Base Note ERP - answer the bank's buyer prompts yourself with web search and save each answer as a run with the searches you ran, the pages you read and the brands the answer names; or file an answer the user pasted from another AI app under that engine. Use when the user asks to run a Radar scan, scan a prompt or the prompt bank, check how AI answers a buyer question, re-scan after publishing content, or save, file or log an answer copied from another assistant.
+description: Step-by-step workflow for adding evidence to AI Search Radar in BaseNote ERP - answer the bank's buyer prompts yourself with web search and save each answer as a run with the searches you ran, the pages you read and the brands the answer names; or file an answer the user pasted from another AI app under that engine. Use when the user asks to run a Radar scan, scan a prompt or the prompt bank, check how AI answers a buyer question, re-scan after publishing content, or save, file or log an answer copied from another assistant.
 ---
 
 # Radar scan: answer the prompts, save the runs

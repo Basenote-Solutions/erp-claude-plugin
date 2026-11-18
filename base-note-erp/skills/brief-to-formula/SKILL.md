@@ -1,6 +1,6 @@
 ---
 name: brief-to-formula
-description: Step-by-step workflow in Base Note ERP from a client's fragrance brief to a released formula - write the brief, generate and refine an AI formula, save it as a draft recipe revision, screen it for IFRA and the markets, record a bench trial, approve it, send a sample round to the client and release it. Use when the user wants to create a new fragrance or formula for a client, turn a brief into a formula, or take an AI draft through to approval.
+description: Step-by-step workflow in BaseNote ERP from a client's fragrance brief to a released formula - write the brief, generate and refine an AI formula, save it as a draft recipe revision, screen it for IFRA and the markets, record a bench trial, approve it, send a sample round to the client and release it. Use when the user wants to create a new fragrance or formula for a client, turn a brief into a formula, or take an AI draft through to approval.
 ---
 
 # Workflow: from a client's brief to a released formula

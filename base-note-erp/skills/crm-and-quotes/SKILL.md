@@ -1,11 +1,11 @@
 ---
 name: crm-and-quotes
-description: Covers Base Note ERP sales work. That means leads (qualify, disqualify, convert), deals on the Private Label, Blend Engine, Alchemy Engine and Upsell tracks with their offered packages, moving deals to Won or Lost, activities, clients with their contacts, addresses and identifiers, client quotes (draft, Mark sent, accept, decline), client contracts made from house templates (edit, preview, email, signed copy, cancel, fee invoice), and the CRM settings (contract templates, picklists, tracks and stages). Use it when the user mentions a lead, prospect, deal, pipeline, stage, won, lost, upsell, an offered package or option, follow-up, call notes, a client contact or address, quoting a client, a contract, agreement, NDA, signed copy or contract template.
+description: Covers BaseNote ERP sales work. That means leads (qualify, disqualify, convert), deals on the Private Label, Blend Engine, Alchemy Engine and Upsell tracks with their offered packages, moving deals to Won or Lost, activities, clients with their contacts, addresses and identifiers, client quotes (draft, Mark sent, accept, decline), client contracts made from house templates (edit, preview, email, signed copy, cancel, fee invoice), and the CRM settings (contract templates, picklists, tracks and stages). Use it when the user mentions a lead, prospect, deal, pipeline, stage, won, lost, upsell, an offered package or option, follow-up, call notes, a client contact or address, quoting a client, a contract, agreement, NDA, signed copy or contract template.
 ---
 
 # CRM, deals, quotes and contracts
 
-Base Note sells private-label perfume projects (the Private Label track), licences for its Blend
+BaseNote sells private-label perfume projects (the Private Label track), licences for its Blend
 Engine and Alchemy Engine software, and upsells such as branding, packaging design or a website
 (the Upsell track). In the CRM, **leads** are people who may buy, **deals** are what is being
 sold (moving through a track's stages), **activities** record what was said, and **clients** are

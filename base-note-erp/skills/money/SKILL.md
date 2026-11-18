@@ -1,11 +1,11 @@
 ---
 name: money
-description: Covers Base Note ERP money. That means invoices (from a quote, deposit and balance, a contract's fee, issue, cancel), payments received and paid out and their allocation, supplier bills, expenses with receipts and their categories, emailed payment requests with a CC and the invoice PDF, Blend and Alchemy Engine licence billing, currencies, exchange rates, tax rates and the company details printed on documents (address, bank details, registration line). Use it when the user mentions an invoice, issuing, a payment, paid or unpaid, overdue, chasing payment, a payment request, a bill, an expense, a receipt, an expense category, a licence fee or renewal, an exchange rate, VAT, a tax rate, bank details or the company details on a PDF.
+description: Covers BaseNote ERP money. That means invoices (from a quote, deposit and balance, a contract's fee, issue, cancel), payments received and paid out and their allocation, supplier bills, expenses with receipts and their categories, emailed payment requests with a CC and the invoice PDF, Blend and Alchemy Engine licence billing, currencies, exchange rates, tax rates and the company details printed on documents (address, bank details, registration line). Use it when the user mentions an invoice, issuing, a payment, paid or unpaid, overdue, chasing payment, a payment request, a bill, an expense, a receipt, an expense category, a licence fee or renewal, an exchange rate, VAT, a tax rate, bank details or the company details on a PDF.
 ---
 
 # Money
 
-Base Note keeps light money records, with no ledger: **quotes and invoices** to clients,
+BaseNote keeps light money records, with no ledger: **quotes and invoices** to clients,
 **payments** in and out (allocated to invoices and bills), **bills** from suppliers, **expenses**
 paid outside a bill, and **licences** for the Blend and Alchemy Engines, which bill on a cycle.
 The base currency is GBP; every document keeps its own currency and rate.

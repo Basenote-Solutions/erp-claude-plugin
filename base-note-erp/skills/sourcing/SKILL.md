@@ -1,6 +1,6 @@
 ---
 name: sourcing
-description: Buying in Base Note ERP - suppliers and supplier items, a supplier's ids in other systems (external refs), supplier availability, supplier price versions with MOQ tiers (draft, publish, cancel, restore), RFQs, supplier quotes, compare and award, purchase orders (issue, close, cancel, PO PDF), goods receipts, shipments and bills from POs. Use when the user mentions a supplier, vendor, RFQ or request for quote, a quote comparison, MOQ or price tiers, a price list or price version, a PO or purchase order, a delivery, goods receipt or GRN, or shipment tracking.
+description: Buying in BaseNote ERP - suppliers and supplier items, a supplier's ids in other systems (external refs), supplier availability, supplier price versions with MOQ tiers (draft, publish, cancel, restore), RFQs, supplier quotes, compare and award, purchase orders (issue, close, cancel, PO PDF), goods receipts, shipments and bills from POs. Use when the user mentions a supplier, vendor, RFQ or request for quote, a quote comparison, MOQ or price tiers, a price list or price version, a PO or purchase order, a delivery, goods receipt or GRN, or shipment tracking.
 ---
 
 # Sourcing: suppliers, prices, RFQs, orders and receipts

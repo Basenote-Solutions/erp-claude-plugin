@@ -1,6 +1,6 @@
 ---
 name: fill-to-ship
-description: Step-by-step workflow in Base Note ERP for a private-label project in production - check materials, create and issue the work order to the contract factory, send the materials, follow the filling, record use and returns, reconcile, collect the balance and finish the compliance documents, receive or ship the finished goods, complete the work order and move the project to Shipped. Use when the user wants to get a PL project filled at a factory and delivered to the client.
+description: Step-by-step workflow in BaseNote ERP for a private-label project in production - check materials, create and issue the work order to the contract factory, send the materials, follow the filling, record use and returns, reconcile, collect the balance and finish the compliance documents, receive or ship the finished goods, complete the work order and move the project to Shipped. Use when the user wants to get a PL project filled at a factory and delivered to the client.
 ---
 
 # Workflow: from a project in production to goods shipped to the client

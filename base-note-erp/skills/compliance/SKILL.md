@@ -1,6 +1,6 @@
 ---
 name: compliance
-description: Compliance documents in Base Note ERP - each project SKU's, formula's and the company's checklist (IFRA certificate, SDS, MSDS, allergen declaration, PIF, CPSR, SCPN and CPNP notifications, labelling check, permits), their status, owner, reference, files and expiry, the project gates they feed, and how formula screenings relate. Use when the user asks what documents are outstanding or expiring, to mark a document done or not needed, attach a certificate, or why a project cannot go to production or ship.
+description: Compliance documents in BaseNote ERP - each project SKU's, formula's and the company's checklist (IFRA certificate, SDS, MSDS, allergen declaration, PIF, CPSR, SCPN and CPNP notifications, labelling check, permits), their status, owner, reference, files and expiry, the project gates they feed, and how formula screenings relate. Use when the user asks what documents are outstanding or expiring, to mark a document done or not needed, attach a certificate, or why a project cannot go to production or ship.
 ---
 
 # Compliance: the document checklist and its gates
@@ -25,7 +25,7 @@ separately from the project's release gates, which read only these checklists.
   the project's owner. With client-supplied oil each SKU also gets the oil's MSDS, SDS and IFRA
   certificate, marked client oil (`client_oil` true; these three come only from the checklist,
   never by hand). Nothing is ever deleted: a mistake is marked Not needed.
-- Company documents: permits, licences and other documents Base Note holds.
+- Company documents: permits, licences and other documents BaseNote holds.
 - Each item also shows `expiry_state` (`none`, `valid`, `expiring` within 30 days, `expired`),
   its `label`, its `attachments` and `upload_doc_type`, the doc_type its files are uploaded as.
 

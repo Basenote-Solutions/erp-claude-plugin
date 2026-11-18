@@ -1,6 +1,6 @@
 ---
 name: lead-to-invoice
-description: Covers the Base Note ERP private-label workflow end to end. It runs from a lead through convert, the deal won, the PL project, the client agreement (contract) and its fee invoice, the quote sent and accepted, samples, the deposit invoice, the emailed payment request, the payment and the balance invoice, up to shipping, with the Blend Engine, Alchemy Engine and Upsell variants. It names each step's operation and what must be true first. Use it when the user wants to take a client from enquiry to invoice, asks what the next step is, where the contract or agreement fits, or why a project or invoice is stuck.
+description: Covers the BaseNote ERP private-label workflow end to end. It runs from a lead through convert, the deal won, the PL project, the client agreement (contract) and its fee invoice, the quote sent and accepted, samples, the deposit invoice, the emailed payment request, the payment and the balance invoice, up to shipping, with the Blend Engine, Alchemy Engine and Upsell variants. It names each step's operation and what must be true first. Use it when the user wants to take a client from enquiry to invoice, asks what the next step is, where the contract or agreement fits, or why a project or invoice is stuck.
 ---
 
 # From a lead to the balance invoice

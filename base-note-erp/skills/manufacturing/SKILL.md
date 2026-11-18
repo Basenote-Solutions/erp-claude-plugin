@@ -1,6 +1,6 @@
 ---
 name: manufacturing
-description: Work orders to contract factories in Base Note ERP - creating and issuing them, sending materials to the factory, recording what it used and returning leftovers, the reconciliation, receiving finished goods or shipping them direct, status updates and the order's files and work instructions. Use when the user mentions a work order or WO, a factory or filler, filling, sending materials, factory stock, what the factory used, reconciliation, finished goods or ship direct.
+description: Work orders to contract factories in BaseNote ERP - creating and issuing them, sending materials to the factory, recording what it used and returning leftovers, the reconciliation, receiving finished goods or shipping them direct, status updates and the order's files and work instructions. Use when the user mentions a work order or WO, a factory or filler, filling, sending materials, factory stock, what the factory used, reconciliation, finished goods or ship direct.
 ---
 
 # Manufacturing: work orders at contract factories

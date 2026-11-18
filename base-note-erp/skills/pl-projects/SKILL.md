@@ -1,6 +1,6 @@
 ---
 name: pl-projects
-description: Covers Base Note ERP private-label (PL) projects. That means the stages from Choices received to Shipped and their gates, SKUs, the cost calculator and snapshots, the quote drafted from a snapshot, sample rounds, project tasks, cost lines and files, the deposit and balance invoices, and the settings behind them (the calculator's defaults in project settings, and the task templates that give a new project its tasks). Use it when the user mentions a PL project, SKU, samples, costing, the calculator, margin, a snapshot, moving a project to a stage, on hold, project tasks or a project's deposit or balance, or wants to change the contingency, overage, buffer, default density or lead days, or a task template.
+description: Covers BaseNote ERP private-label (PL) projects. That means the stages from Choices received to Shipped and their gates, SKUs, the cost calculator and snapshots, the quote drafted from a snapshot, sample rounds, project tasks, cost lines and files, the deposit and balance invoices, and the settings behind them (the calculator's defaults in project settings, and the task templates that give a new project its tasks). Use it when the user mentions a PL project, SKU, samples, costing, the calculator, margin, a snapshot, moving a project to a stage, on hold, project tasks or a project's deposit or balance, or wants to change the contingency, overage, buffer, default density or lead days, or a task template.
 ---
 
 # Private-label projects
