@@ -144,7 +144,7 @@ agreements a client signs, written from a house template and emailed as a PDF.
   (`deal_lost_reason_required` otherwise). Leaving Won or Lost for another outcome needs a
   `reason`.
 - **What winning does** (once, in the same move): a Private Label deal makes its PL project at
-  Choices received with its task list (see the pl-projects skill). A Blend Engine or Alchemy
+  Choices received with its card of steps (see the pl-projects skill). A Blend Engine or Alchemy
   Engine deal drafts a licence with the deal's value as the fee (see the money skill). An Upsell
   deal makes nothing. On the two engine tracks the first won stage is Contract signed: moving the
   deal there is the win. Signing a contract record moves no deal.

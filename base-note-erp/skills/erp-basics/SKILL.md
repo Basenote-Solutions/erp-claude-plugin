@@ -1,6 +1,6 @@
 ---
 name: erp-basics
-description: How to work in BaseNote ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation). Also what no area skill covers - tasks on any record (the board, moving and blocking, checklists, comments, files, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, Claude connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
+description: How to work in BaseNote ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation). Also what no area skill covers - tasks on any record (the board and its lists, moving and blocking, checklists, comments, files, links, covers, watching, templates and copies, the calendar, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, Claude connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
 ---
 
 # BaseNote ERP: the basics
@@ -89,34 +89,75 @@ Errors come back as `{"error": {"code", "message", "details"}}` with the HTTP st
 
 crm-and-quotes and pl-projects show how to create, complete and reopen tasks; the rest is here.
 Any signed-in user reads the tasks they may see (unlinked ones, and those on record types they
-may read); every write needs `manage_tasks`. Call `describe_operation` for the bodies.
+may read); every write but watching needs `manage_tasks`. An administrator may narrow what a
+user sees to some businesses, labels or kinds of card, or to the cards they are on; a task the
+user owns, is a member of or has a step on always shows, and a task outside their view answers
+404. Call `describe_operation` for the bodies.
 
 - **Read**: `tasks_list` (filters: `owner` or `person`, a user id or `me`, where person also
   finds tasks they are a member of; `status`, where `open` means To do, Doing or Blocked; `due`
   `overdue`, `today` or `week`; `label`; `record_type` with `record_id`; `search`),
-  `tasks_retrieve`, and `tasks_board_retrieve`: the same filters but status, as the columns To
-  do, Doing, Blocked and Done (done in the last 14 days; cancelled tasks are left off), each with
-  its `count` and at most 200 cards.
-- **Move**: `tasks_move_create` (`expected_revision`, `status` `open`, `doing`, `blocked`, `done`
-  or `cancelled`). `blocked` needs `blocked_reason` and whom we wait on: `waiting_on_user_id` (a
-  teammate) or `waiting_on_text` (anyone else, by name); leaving Blocked clears them. A done or
-  cancelled task can only reopen, to `open`, `doing` or `blocked` (409
-  `task_transition_invalid`). The owner and members are told when a task is blocked or done.
+  `business`, a business id; `archived` true for the archived tasks instead of the live ones),
+  `tasks_retrieve`, and `tasks_board_retrieve`: the same filters but status, as the board's own
+  lists in order (`task_lists_list`; each list has a `status`, which is what its tasks are),
+  each with its `count` and at most 200 cards in their hand-made order. Done tasks stay on the
+  board until they are archived.
+- **Move**: `tasks_move_create` with `expected_revision` and either `list_id` (and `before_id`,
+  the task it sits before; null: the end) or `status` (`open`, `doing`, `blocked` or `done`: the
+  first list of that status). A list of status `blocked` needs `blocked_reason` and whom we wait
+  on: `waiting_on_user_id` (a teammate) or `waiting_on_text` (anyone else, by name); leaving it
+  clears them. `tasks_done_create` and `tasks_reopen_create` are the short forms. The owner and
+  members are told when a task is blocked or done.
+- **Archive**: `tasks_archive_create` (`expected_revision`) takes a task off the board and the
+  open lists (it is kept, never deleted); `tasks_unarchive_create` puts it back at the end of
+  its list. There is no cancel.
+- **Lists** (`manage_tasks`): `task_lists_create` (`name`, and `status`, fixed for good),
+  `task_lists_update` (rename), `task_lists_move_create` (`before_id`),
+  `task_lists_archive_create` and `task_lists_unarchive_create` (its tasks leave and return with
+  it), `task_lists_archive_cards_create` (archives every task of the list).
 - **Edit**: `tasks_update` is a PUT: send `title`, `notes`, `owner_id`, `due_date` and `priority`
-  (`low`, `normal`, `high`) again with `expected_revision`; `member_ids` and `label_ids` left out
-  stay as they are. Owner and members are active users who can read the linked record.
-- **Checklist**: `tasks_checklist_create` (`text`) adds a step; `task_checklist_update` (path
-  `item_id`; `done` true or false, optional `text`) ticks, unticks or renames it;
-  `task_checklist_destroy` removes it. They take no revision and answer the whole task.
-- **Comments**: `tasks_comments_list` (oldest first); `tasks_comments_create` (`body`,
-  `mention_ids` of active users who can see the task). Mentioned users, the owner and the
-  members are notified. There is no operation to edit or delete a comment.
+  (`low`, `normal`, `high`) again with `expected_revision`; `member_ids`, `label_ids` and
+  `business_id` left out stay as they are. Owner and members are active users who can read the
+  linked record. Every task has a business (`task_businesses_list`; the first is the default):
+  `tasks_create` takes `business_id` and `list_id` (never a Blocked list), both optional.
+- **Checklists**: a task has several named checklists (`checklists` on the task, each with its
+  `items`, `done` and `total`). `tasks_checklists_create` (`name`) adds one;
+  `task_checklists_update` renames it and `task_checklists_destroy` removes it with its steps.
+  `task_checklists_items_create` (path `checklist_id`; `text`, optional `owner_id` and
+  `due_date`) adds a step; `tasks_checklist_create` adds one to the first checklist (made when
+  there is none). `task_checklist_update` (path `item_id`) changes what it names and leaves the
+  rest: `done`, `text`, `owner_id` and `due_date` (null clears either), `before_id` (the step it
+  sits before; null: the end). `task_checklist_destroy` removes a step. They take no revision
+  and answer the whole task. A step's person is told when it is assigned, due and overdue; a
+  task's `next_step` is its open step due soonest, and a task is `overdue` when it or an open
+  step is. `person` on `tasks_list` also finds tasks someone has an open step on.
+- **Comments**: `tasks_comments_list` (newest first); `tasks_comments_create` (`body`,
+  `mention_ids` of active users who can see the task). Mentioned users, the owner, the members
+  and the watchers are notified. A comment's author alone changes it with
+  `task_comments_update` (path `comment_id`; `body`, `mention_ids`; it is then marked
+  `edited_at`) or removes it with `task_comments_destroy`.
+- **Watch**: `tasks_watch_update` (`watching` true or false) for the user themself: a watcher
+  is told what the owner and members are told. A task's `watchers` are user ids.
+- **Cover**: `tasks_cover_update` with `colour` (a label colour, or blank) and `attachment_id`
+  (one of the task's PNG or JPEG files, or null): one or the other, both empty for none.
+- **Links**: `tasks_links_create` (`url`, http or https, and an optional `title`) and
+  `task_links_destroy` (path `link_id`); a task's `links` list them.
+- **Templates and copies**: `tasks_template_update` (`is_template`) makes a task a pattern to
+  copy: it stays on the board, is never due or overdue and is left off the calendar (a
+  record's own card cannot be one); `tasks_list` takes `template` true or false.
+  `tasks_copy_create` (optional `title` and `list_id`) makes a new task owned by the user from
+  any task: its notes, priority, business, record, members, labels, cover colour, links and
+  checklists, every step unticked and undated; never its due date, comments or files.
+- **Calendar**: `tasks_calendar_retrieve` (`month` as YYYY-MM, default the user's own month,
+  with the filters of `tasks_list`): whole weeks, Monday first, each day with the tasks due and
+  the open steps due.
 - **Files**: `upload_file` with doc_type `task`, then `tasks_files_create` (`attachment_id`);
   `tasks_files_list`, then `download_file`. A file belongs to one task: upload it again for
   another.
 - **Labels**: `task_labels_list`, `task_labels_create` (`name`, `colour` `blue`, `green`,
-  `amber`, `red` or `grey`), `task_labels_archive_create`; a task takes them as `label_ids`. An
-  archived label stays on the tasks that carry it.
+  `amber`, `red`, `grey`, `purple`, `teal`, `pink`, `orange` or `lime`),
+  `task_labels_archive_create`; a task takes them as `label_ids`. An archived label stays on the
+  tasks that carry it.
 - `task_record_types_list` names the record types a task may link to (`crm.deal`,
   `projects.project`, `manufacturing.work_order`, `compliance.item` and others).
 

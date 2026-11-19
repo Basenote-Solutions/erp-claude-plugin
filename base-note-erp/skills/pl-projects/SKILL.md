@@ -82,10 +82,15 @@ project and tell the user what is missing.
   goes in `query`).
 - **Files**: `upload_file` with doc_type `project`, then `projects_documents_create` with the
   `attachment_id`.
-- **Tasks**: `tasks_list` with `record_type` `projects.project` and `record_id`; `tasks_create`,
-  `tasks_update`, `tasks_done_create`, `tasks_cancel_create`, `tasks_reopen_create`. The default
-  task template's lines (`task_templates_list`) became tasks when the project was made. The
-  board, checklists, comments and files of a task are in the erp-basics skill.
+- **Tasks**: a project has one card of its own: `tasks_list` with `record_type`
+  `projects.project`, `record_id` and `record_card` true. Its `checklists` are the project's
+  stages, and their steps are the default task template's lines (`task_templates_list`), each
+  with its person (`owner`) and `due_date`; tick one with `task_checklist_update` (path
+  `item_id`, `done` true). The card's title and due date follow the project (change them with
+  `projects_partial_update`), and it cannot be a template. `record_card` false lists the
+  project's other tasks (`tasks_create`, `tasks_update`, `tasks_done_create`,
+  `tasks_reopen_create`, `tasks_archive_create`). The board, checklists, comments and files of
+  a task are in the erp-basics skill.
 - **Project settings** (the calculator's and a new project's defaults):
   `project_settings_retrieve`; `project_settings_update` (a PUT with `expected_revision`: send
   `contingency_pct`, `overage_pct`, `default_density` and `default_lead_days` every time, and
@@ -141,10 +146,11 @@ project and tell the user what is missing.
   `default_density` (g/mL, when neither the SKU nor its formula gives one) and
   `default_lead_days` (a new project's target delivery, 0 to 730). A change counts from then on
   (the next calculator run, SKU saved or project created); snapshots keep what they froze.
-- **Task templates**: each line makes one task, due `days_before_delivery` days before the
-  project's target delivery (never before today) and owned by its `default_owner`, or by the
-  project's owner when blank. Only the default template is used, and only when a project is
-  created: editing a template changes no task that exists. The default cannot be archived (make
+- **Task templates**: each line makes one step on the project's card, in the checklist of its
+  stage, due `days_before_delivery` days before the project's target delivery (never before
+  today) and given to its `default_owner`, or to the project's owner when blank. Only the
+  default template is used, and only when a project is created: editing a template changes no
+  step that exists. The default cannot be archived (make
   another the default first) and an archived template cannot be made the default.
 
 ## Common jobs
