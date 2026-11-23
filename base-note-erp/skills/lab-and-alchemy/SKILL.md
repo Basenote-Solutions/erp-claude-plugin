@@ -52,7 +52,7 @@ Formulas and versions
   such a draft). Every line gives a ratio or none does; a diluted line needs a solvent line (its
   own ratio may be `"0"`). A version answers `dosage_pct`, `total_ratio`, `total_oil_ratio`, each
   line's `finished_pct` and, once it has a `batch_g`, its `mass_g`. `recipe_revisions_destroy`
-  deletes a draft.
+  deletes a draft (409 `formula_version_in_use` while a project SKU or sample round names it).
 - `recipe_revisions_partial_update` (PATCH, any status, no expected_revision): the version's
   annotations `verdict` (good, bad or ""), `development_notes`, `batch_g` (grams, 3 decimals).
 - `recipe_revisions_copy_create` (`code`, `name`): a new formula of the same type and client whose
@@ -61,8 +61,12 @@ Formulas and versions
   totals 100 (422 `percent_total_invalid`), no Blocked material (409 `material_blocked`), no
   archived one (422 `material_not_approved`) and no nesting cycle (422 `recipe_cycle`);
   `release: true` releases in the same step ("Mark as best").
-- `recipe_revisions_release_create` [key] (no body; `approve_recipes`): Approved or Superseded →
-  Released (the formula's best); the previous release is superseded.
+- `recipe_revisions_release_create` [key] (`expected_revision`: the version's `revision` as read,
+  always pass it; `approve_recipes`): Approved or Superseded → Released (the formula's best); the
+  previous release is superseded. 409 `stale_revision`: the version was reopened and edited since.
+- `recipe_revisions_reopen_create` [key] (`expected_revision`; `approve_recipes`): Approved,
+  Released or Superseded → Draft, the same version and number, edited in place and approved again
+  (a Draft: 409 `revision_status_invalid`; changed since it was read: 409 `stale_revision`).
 - `formula_costs_retrieve` (path pk = the version's id): its cost per kg of finished product,
   material by material at today's supplier prices, else unit costs: `materials` (`finished_pct`,
   `formula_qty_kg` in 1 kg, `cost_per_kg`, `material_line_cost`, `source`),
@@ -167,7 +171,8 @@ Materials and lab work
 
 1. **Change a released formula:** `recipes_revisions_create` → `recipe_revisions_update` with the
    whole line set → `compliance_evaluations_create` [key] → approve (with `release` when it should
-   be used now).
+   be used now). To correct the released version itself, keeping its number:
+   `recipe_revisions_reopen_create` [key] in place of the first step (see Pitfalls).
 2. **A market fails:** read the evaluation's findings (substance, limit, action), then
    `substitution_runs_create` [key] and offer the options, or reduce the line in a new draft.
 3. **What does a batch need?** `scale_ups_create`, show what is short, then reserve on request.
@@ -179,8 +184,13 @@ Materials and lab work
 
 ## Pitfalls
 
-- An approved version never changes: make a new draft. Saving or accepting orders, makes or
-  releases nothing.
+- An approved, released or superseded version is locked. To change it in place, reopen it
+  (`recipe_revisions_reopen_create` [key], approve_recipes): the same version goes back to Draft,
+  is edited with `recipe_revisions_update` and approved or marked best again. Say first that a
+  formula whose best is reopened has no best until then, and check `sample_rounds_list` with
+  `external_version_id`: a round sent of it will show the changed formula. To keep the version
+  as it was, make a new draft from it instead. Saving or accepting orders, makes or releases
+  nothing.
 - Screening judges a range by its bounds; missing data never passes (Needs review). Re-run
   `compliance_evaluations_create` [key] after any edit.
 - A version with no finished layer (a concentrate-only accord) cannot be screened: 422
