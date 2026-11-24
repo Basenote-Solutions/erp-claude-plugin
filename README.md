@@ -1,9 +1,23 @@
-# Base Note ERP plugin for Claude
+# Base Note ERP plugin
 
-The connector and skills that let Claude work in Base Note ERP. It is useful only with a Base Note
-ERP account: signing in and every permission are the ERP's.
+Connect ChatGPT, Codex or Claude to Base Note ERP with your own ERP account. Your ERP role controls which records and files you can access and which changes you can make. The package includes the staging connector and 16 workflow skills.
 
-## Install
+## ChatGPT
+
+Open Plugins, select **Add → Add custom MCP server**, and enter `https://staging-alchemy-api.basenotesolutions.com/mcp`. Choose OAuth with dynamic client registration and sign in to the ERP. In a chat, select Base Note ERP. Personal ChatGPT Pro supports reads. Eligible managed workspaces can also enable writes and file uploads.
+
+## Codex
+
+Install the connector and skills from the marketplace.
+
+```sh
+codex plugin marketplace add Basenote-Solutions/erp-claude-plugin
+codex plugin add base-note-erp@base-note
+```
+
+Open a new Codex chat and authenticate the Base Note ERP server when prompted. For direct MCP setup in Codex desktop or the CLI, see [AI connections in the ERP](https://alchemy.basenotesolutions.com/preferences/ai-connections).
+
+## Claude
 
 In claude.ai or Claude Desktop, open Customize, then Plugins, choose Add, Add marketplace, then Add
 from a repository, and enter `Basenote-Solutions/erp-claude-plugin`. Press Sync, then Add beside
@@ -18,5 +32,4 @@ In Claude Code:
 claude plugin install base-note-erp --marketplace Basenote-Solutions/erp-claude-plugin
 ```
 
-This repository is published automatically, so changes made here are overwritten. All rights
-reserved.
+The ERP publication workflow maintains the plugin files and the OpenAI marketplace catalog. All rights reserved.
