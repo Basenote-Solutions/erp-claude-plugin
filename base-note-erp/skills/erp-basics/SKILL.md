@@ -1,6 +1,6 @@
 ---
 name: erp-basics
-description: How to work in BaseNote ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation). Also what no area skill covers - tasks on any record (the board and its lists, moving and blocking, checklists, comments, files, links, covers, watching, templates and copies, the calendar, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, Claude connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
+description: How to work in BaseNote ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation). Also what no area skill covers - tasks on any record (the board and its lists, moving and blocking, checklists, comments, files, links, covers, watching, templates and copies, the calendar, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, AI connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
 ---
 
 # BaseNote ERP: the basics
@@ -8,7 +8,7 @@ description: How to work in BaseNote ERP through its connector - which tool to u
 BaseNote ERP covers CRM and quotes, marketing (AI Search Radar), private-label (PL)
 projects, sourcing, contract manufacturing, the lab and the Alchemy formulation engine, stock,
 compliance and light money (no ledger). Through the connector you act **as the signed-in user**:
-exactly their role's permissions, every change recorded under their name with "via Claude" in
+exactly their role's permissions, every change recorded under their name with the connection source in
 History.
 
 ## Which tool
@@ -21,7 +21,7 @@ History.
 | Figures across records | `run_report` (no name: the catalogue and its parameters) |
 | Anything else | `find_operations` → `describe_operation` → `read` (GET) or `write` |
 | An area's rules and steps, when its skill is not loaded | `how_to` (topic = the skill's name) |
-| A PDF, attachment or export | `download_file`; to add one, `upload_file` then link it with `write` (a file you hold: give its `size`, run the answer's curl in your sandbox, then finish with `attachment_id`) |
+| A PDF, attachment or export | `download_file`; to add one, `upload_file` then link it with `write` (a selected ChatGPT attachment: pass `file`; a file on disk: give its `size`, run the answer's curl in your sandbox, then finish with `attachment_id`) |
 
 Area skills name the operations for each job: crm-and-quotes, marketing-radar, pl-projects,
 sourcing, manufacturing, stock, lab-and-alchemy, compliance, money, reports; and the
@@ -280,7 +280,7 @@ Call `describe_operation` for the bodies.
   `pattern` with one `{seq}` such as `{prefix}{seq:05d}`, `reset_period` `none`, `fiscal_year`
   or `month`). The new series carries the same sequence on. Do both in one go: while a document
   type has no active series, its documents cannot be numbered (422 `numbering_series_missing`).
-- **Claude connections**: `connections_list` (the user's own; an administrator another user's
+- **AI connections**: `connections_list` (the user's own; an administrator another user's
   with `user`) and `connections_revoke_create` (path `grant_id`), which ends one for good:
   ending the connection in use cuts this conversation off from the ERP. A new connection is
   approved only in the web app, like signing in and changing a password.

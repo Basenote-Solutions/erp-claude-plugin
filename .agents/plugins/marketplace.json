@@ -1,0 +1,12 @@
+{
+  "name": "base-note",
+  "interface": { "displayName": "BaseNote Solutions" },
+  "plugins": [
+    {
+      "name": "base-note-erp",
+      "source": { "source": "local", "path": "./base-note-erp" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Productivity"
+    }
+  ]
+}

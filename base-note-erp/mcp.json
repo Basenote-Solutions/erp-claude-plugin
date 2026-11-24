@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "base-note-erp": {
+      "type": "streamable-http",
+      "url": "https://staging-alchemy-api.basenotesolutions.com/mcp"
+    }
+  }
+}
