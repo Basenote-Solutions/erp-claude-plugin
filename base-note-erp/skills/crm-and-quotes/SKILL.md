@@ -210,7 +210,9 @@ agreements a client signs, written from a house template and emailed as a PDF.
   credit). Link it to its record with `source_type` and `source_id` (for example `crm.deal`,
   `projects.project` or `money.licence`). The contact must belong to the client. The server works
   out the totals.
-- **Accept**: only while the quote is valid (`quote_expired` otherwise). Each record has one
+- **Accept**: record an externally accepted draft directly with `quotes_accept_create`. The
+  ERP assigns a number and prepares its PDF. Administrators can also accept after the validity
+  date by supplying `expiry_reason`. Each record has one
   accepted quote: accepting a new one supersedes the old one and cancels its draft invoices,
   unless an invoice from the old one was already issued (409 `quote_already_accepted`).
 - **Private Label quotes**: the quote that counts for a PL project's gates is the project's own

@@ -105,8 +105,7 @@ describe the list operation to see them.
   the outcome is unknown (5xx, timeout, `idempotency_in_flight`, `concurrency_conflict`) retry
   with the **same key and the same body**: it is made once. A new intent gets a new key.
   422 `idempotency_key_reused` means the body changed.
-- Gates refuse a move with what is missing (e.g. a project stage); report the reasons instead of
-  working around them.
+- Show the missing input and the record where the user can supply it. Project stage changes and optional task checklists are independent.
 
 ## Errors
 

@@ -23,8 +23,7 @@ being made, what came in, what went out and what is left to do.
   group. Postings (issuing an invoice, a payment, posting a bill) and the stage are each
   confirmed on their own.
 
-Work in the order below. Each step gives the next one what it needs, and the stage comes
-last, because the normal stage moves read history made inside the ERP.
+Choose the sections that match the order. Record its stage whenever known.
 
 ## 1. Parties and contacts first
 
@@ -102,18 +101,9 @@ last, because the normal stage moves read history made inside the ERP.
   deposit invoice issued) has ticked itself. A step done outside the ERP with nothing left to
   record is ticked with `task_checklist_update` once the user confirms it.
 
-## 9. The stage, last
+## 9. Project stage and delivery
 
-- A normal move goes one step at a time, and each gate reads what was done in the ERP: a sent
-  quote, approved sample rounds, a paid deposit. An order whose history happened elsewhere
-  is put at its true stage in one step by an administrator: `projects_set_stage_create` [key]
-  (`expected_revision`, `to`, `reason`).
-- The reason is kept in the project's history and the owner is told. No stage invoice is
-  drafted, which is why the invoices came first.
-- For anyone who is not an administrator it answers 403: say that an administrator must do
-  it, and stop.
-- `projects_retrieve` goes on listing the gates not met: that is information, not a fault.
-  From here the project moves the usual way (pl-projects).
+Choose the project’s actual stage from the current catalogue and move directly to it. Record the production partner, reference, actual or expected delivery date and dated updates when known. A historical order can be entered with just these facts.
 
 ## 10. Check the result
 

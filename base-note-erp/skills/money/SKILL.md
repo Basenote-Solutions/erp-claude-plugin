@@ -104,7 +104,16 @@ The base currency is GBP; every document keeps its own currency and rate.
   kept). Sets the due date, unless the draft has one, from the client's payment terms, else the
   standard term (read the answer's `due_date`). Sells any stock lines at average cost, all or nothing: with `insufficient_stock` nothing
   is issued. `issue_date` cannot be after the user's today.
-- **Cancel**: refused while payments are allocated (`invoice_has_allocations`): void them first.
+- **Correct a posted record**: administrators can use `invoices_correct_create` or
+  `bills_correct_create` [key]. Review the current document and its posted payment allocation
+  IDs with the user. Send those IDs in `allocations`, the revision and a reason. The result
+  is a linked editable draft. The original is cancelled, its stock sale reversed if applicable,
+  and its allocated amounts returned to credit on their bank payments. After issue or posting,
+  use the linked payments to allocate credit.
+- **Correct an allocation**: administrators can use `payments_correct_allocation_create` [key]
+  with the original allocation ID, revision, reason and replacement allocations. Any remainder
+  becomes credit on that payment.
+- **Cancel** requires releasing the document’s payment allocations first.
   A deposit cannot be edited or cancelled while its balance invoice exists
   (`balance_invoice_exists`): cancel the balance first. Cancelling an issued invoice puts its
   stock back at the same value.

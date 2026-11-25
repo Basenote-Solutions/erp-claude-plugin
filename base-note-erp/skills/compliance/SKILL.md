@@ -1,15 +1,11 @@
 ---
 name: compliance
-description: Compliance documents in BaseNote ERP - each project SKU's, formula's and the company's checklist (IFRA certificate, SDS, MSDS, allergen declaration, PIF, CPSR, SCPN and CPNP notifications, labelling check, permits), their status, owner, reference, files and expiry, the project gates they feed, and how formula screenings relate. Use when the user asks what documents are outstanding or expiring, to mark a document done or not needed, attach a certificate, or why a project cannot go to production or ship.
+description: Compliance documents in BaseNote ERP - each project SKU's, formula's and the company's checklist (IFRA certificate, SDS, MSDS, allergen declaration, PIF, CPSR, SCPN and CPNP notifications, labelling check, permits), their status, owner, reference, files and expiry, and how formula screenings relate. Use when the user asks what documents are outstanding or expiring, to mark a document done or not needed, attach a certificate, or record a reference after completion.
 ---
 
-# Compliance: the document checklist and its gates
+# Compliance documents
 
-Every PL project SKU must have its regulatory paperwork before the goods ship. The ERP keeps a
-checklist per project SKU, per formula and for the company, with a status, owner, reference,
-expiry date and files. The checklists feed two project gates. Formula screening against IFRA and
-market rules (compliance evaluations) is lab work, described in lab-and-alchemy, and is recorded
-separately from the project's release gates, which read only these checklists.
+Record the reference, files, owner and expiry of each document. Project paperwork and formula screening have their own records.
 
 ## Records and statuses
 
@@ -64,32 +60,15 @@ Call `describe_operation` before the first use of each operation for its exact b
 
 - Reads need `view_compliance`, writes `manage_compliance`, uploads `upload_attachments`. Opening
   a PIF's, CPSR's or allergen declaration's files also needs `view_formula_pct`.
-- **Mark done** needs a file linked first (422 `compliance_file_required`), or for an SCPN or CPNP
-  notification its reference instead (422 `compliance_reference_required`; a done one cannot
-  lose its reference either). **Not needed** needs a reason (422 `reason_required`), kept in
-  the document's history.
+- Record **Done** or **Not needed** when the user confirms the status. The user can supply a reference, file or note separately.
 - Edits and status changes send the item's current `expected_revision` (409 `stale_revision`:
   read it again). Linking a file raises the revision too.
 - An owner is an active user who can see compliance.
 - Dates are `YYYY-MM-DD`. Only the item's own expiry date counts (the upload asks none).
 
-## The gates they feed
+## Project paperwork
 
-Compliance registers two gates, which projects check:
-
-- **Project → Production** (`projects.production`): with client-supplied oil, each live SKU's
-  client-oil MSDS, SDS and IFRA certificate are Done (on a SKU made from one of our formula
-  versions they may be Not needed instead). Without client-supplied oil it asks nothing.
-- **Project release** (`projects.release`: → Shipped, and a work order's Receive goods or Ship
-  direct): every live SKU's checklist is Done or Not needed, and none of its default documents
-  is absent. The gate reads SKU documents only: formula and company documents are
-  tracked separately, and an archived SKU's are ignored.
-- A Done document whose expiry date has passed counts as **not done**.
-- A refused gate answers 422 `compliance_incomplete` with `details.gate` (`production` or
-  `release`) and `details.items`, one per document still to do: `sku_name`, `doc_type`,
-  `client_oil`, `status`, `problem` (`not_done`, `expired` or `missing`) and `item`, its id.
-  List them for the user by SKU. `projects_retrieve` shows both gates, met or not, without
-  moving anything.
+List the outstanding documents for the project or SKU when asked. Production partners, delivery, sample rounds and board stages are recorded independently of document status.
 
 ## Expiry
 
@@ -106,8 +85,7 @@ out. Renewing = attach the new file and update `expiry_date`.
    `compliance_items_attachments_create` → set reference and expiry with
    `compliance_items_partial_update` → `compliance_items_set_status_create` to `done`, each with
    the `revision` the step before answered.
-3. **Why won't the project ship?** `projects_retrieve` (its gates), then the outstanding list
-   above.
+3. **Review a delivery** with the project’s partner details, dated updates and independently listed paperwork.
 4. **What expires soon?** `compliance_items_list` with `expiring=true`.
 5. **A company permit:** `compliance_items_create` with `scope` `company`, `doc_type` `permit`,
    a `title` and its `expiry_date`; attach the file and mark it done as in job 2.

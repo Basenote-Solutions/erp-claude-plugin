@@ -89,7 +89,8 @@ Stock and postings
   `low=true`, `in_stock=true`): per-item totals with the reorder level and the low flag.
 - `moves_list` (`item`, `location`, `lot`, `kind`, `group`, `source_type`/`source_id`, `from`/`to`
   dates): every move, newest first; `group` shows all lines of one posting.
-- `stock_receive_create` [key]: stock without a supplier document (found, gifts). Lot-tracked
+- Use the posting’s `lines` array for multiple items, locations or lots in one transaction.
+- `stock_receive_create` [key]: an optional `project` links the posting to it. Stock without a supplier document (found, gifts). Lot-tracked
   items need `lot_no` (with its `expiry` when it has one); BaseNote stock needs a `unit_cost`
   (GBP per stock unit, `view_cost`); client stock names `owner` and takes no cost. Purchases
   arrive with a goods receipt instead (sourcing).
@@ -162,7 +163,10 @@ Opening stock import
 
 ## Pitfalls
 
-- Moves never change: a mistake is corrected by a new posting (adjustment or transfer).
+- Administrators can correct a recorded move with `moves_correction_preview_create`, using
+  its original move ID, signed quantity and value changes, and a reason. Show the returned
+  balances to the user. Submit `moves_correct_create` [key] with the reviewed impact in
+  `expected`. This appends a linked correction for that item, location, lot and owner.
 - A reservation without a lot holds BaseNote stock; a client's oil is held only by naming its
   lot. Client stock has no value.
 - Shipped or cancelled projects and completed or cancelled work orders cannot hold reservations.
