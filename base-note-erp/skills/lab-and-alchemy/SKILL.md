@@ -166,6 +166,10 @@ Materials and lab work
   material refuses them.
 - A brief's text goes to an outside AI service: never type client names, prices or supplier
   names into it.
+- How closely a market perfume matches a project SKU's target notes is scored by the ERP's
+  own matcher, reached through the project SKU operations
+  (`project_skus_reference_matches_create` and `project_skus_references_list`: the
+  pl-projects skill). Never work out a match percentage yourself.
 
 ## Common jobs
 

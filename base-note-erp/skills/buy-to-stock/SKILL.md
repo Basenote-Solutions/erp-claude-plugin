@@ -1,6 +1,6 @@
 ---
 name: buy-to-stock
-description: Step-by-step workflow in BaseNote ERP from asking suppliers for prices to paying them - RFQ, supplier quotes, compare, award, purchase order, issue, shipment tracking, goods receipt into stock, bill from the PO, posting it and the payment out. Use when the user wants to buy materials, bottles, caps or packaging, get quotes from suppliers, order from the best one, receive a delivery or pay a supplier for an order.
+description: Step-by-step workflow in BaseNote ERP from asking suppliers for prices to paying them - RFQ, supplier quotes, compare, award, purchase order, issue, shipment tracking, goods receipt into stock, bill from the PO, posting it and the payment out. Use when the user wants to buy materials, bottles, caps or packaging, get quotes from suppliers, order from the best one, receive a delivery or pay a supplier for an order, or get a printer's or packer's quote for boxes, labels or packing.
 ---
 
 # Workflow: from a request for quote to stock and the supplier paid
@@ -24,6 +24,10 @@ is missing, stop at that step and say who must do it.
   numbered RFQ- at once.
 - `rfqs_send_create` (expected_revision) marks it Sent; it needs a line and an invited supplier.
   **Nothing is emailed**: offer to draft the request text for the user to send each supplier.
+- Boxes, labels, printing and packing are not catalog items: ask for them as `spec` lines, and
+  carry them as free text through the quote, the award and the order (a description line:
+  billed, never received). With the RFQ's `project` set, sending it ticks the step of the
+  project's card that waits for quotes to be requested.
 
 ## 2. Record the quotes
 
@@ -55,7 +59,9 @@ is missing, stop at that step and say who must do it.
   billed, never received).
 - `purchase_orders_issue_create` [key] with expected_revision: numbered PO-; the worker renders
   the PDF. Fetch it with `download_file` (`purchase_order_id`) and give the user the link to send
-  the supplier; 404 `purchase_order_pdf_not_ready` means try again in a moment.
+  the supplier; 404 `purchase_order_pdf_not_ready` means try again in a moment. For an order
+  with a `project`, issuing ticks the step of the project's card that waits for purchase
+  orders.
 - Optional tracking: `shipments_create` (carrier, tracking number, ETD, ETA, `purchase_order`);
   `shipments_update` (the whole record, expected_revision) to `in_transit` and `delivered`.
 
@@ -78,16 +84,24 @@ is missing, stop at that step and say who must do it.
   order's prices and tax rates; the answer is the bill's id. 409 `nothing_to_bill` when all is
   billed, 409 `bill_duplicate` when the supplier already has a bill with that reference.
 - Compare it with the supplier's invoice; adjust with `bills_update` (expected_revision) if the
-  supplier billed differently. Attach their scan: `upload_file` (doc_type `supplier_bill`) →
-  `bills_files_create`.
+  supplier billed differently. Attach their invoice: `upload_file` with `record_type` `bills`
+  and `record_id`, or `ask_for_file` when the user holds it.
+- The bill counts for the order's project. When its lines serve different projects, name each
+  with `project_id` on the line, or `bills_projects_create` [key] afterwards; a stocked item's
+  line names none, as stock is costed to its project when used.
 - `bills_post_create` [key] with expected_revision: Posted, totals frozen at the bill date's rate.
 
 ## 7. Pay the supplier
 
 - `payments_create` [key]: `direction` `out`, `party` (the supplier), `payment_date`, `amount`,
-  `currency` (the bill's), `method` (`bank_transfer`, `card`, `cash`, `other`), `reference`, and
-  `allocations` `[{bill, amount}]` (each ≤ what the bill still owes: 422 `over_allocation`). An
-  unallocated rest stays on account; `payments_allocate_create` [key] allocates it later.
+  `currency` (the bill's), `amount_gbp` (the GBP that left the bank, fees included, from the
+  bank's receipt; in place of `fx_rate`), `external_ref` (the bank's own reference: a second
+  payment carrying it is refused), `method` (`bank_transfer`, `card`, `cash`, `other`),
+  `reference`, and `allocations` `[{bill, amount}]` (each ≤ what the bill still owes: 422
+  `over_allocation`). An unallocated rest stays on account; `payments_allocate_create` [key]
+  allocates it later.
+- A bill paid in parts (a deposit, then the balance) takes a payment plan first:
+  `bills_instalments_update` (the supplier-invoice-to-bill skill, step 7).
 - The bill's payment status becomes part paid or paid.
 - Finally `purchase_orders_close_create` [key] with expected_revision: a Received order closes as
   it is; one that will not be fully received needs a `reason`.
@@ -99,6 +113,8 @@ is missing, stop at that step and say who must do it.
 - Published prices never change; a wrong award's prices need a cancelled price version
   (`supplier_price_versions_cancel_create`, `publish_supplier_prices`).
 - A sent RFQ keeps its lines and project, an awarded quote and an issued PO their lines.
+- A supplier's invoice with no purchase order behind it is still a bill, never a project cost
+  line: the supplier-invoice-to-bill skill.
 
 ## Confirm with the user before
 

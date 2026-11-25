@@ -28,6 +28,9 @@ at any point, alongside the stages.
   especially moves, issuing, emails and payments, before running it.
 - When a step is refused, report the error code and what it means (listed below). Don't work
   around a gate.
+- The project's card has a step for most rows below, and many tick themselves when the row's
+  operation runs (the quote sent, samples sent, a round decided, the deposit or balance
+  invoice issued, the project shipped). Do the step's action rather than ticking the step.
 
 ## The steps
 
@@ -40,18 +43,19 @@ at any point, alongside the stages.
 | 5 | Work the pipeline | `deals_move_create` [key] through Discovery call, Explainer sent and so on. Log calls with `activities_create` | The stage belongs to the Private Label track. Moving to these stages only tracks the sale. |
 | 6 | Win the deal | `deals_move_create` [key] to the track's won stage | The client has committed. This makes the PL project at Choices received with its card of steps (the deal's `project`). It happens once. |
 | 6a | Send the agreement (optional) | `contracts_create`, `contracts_send_create` [key], `contracts_signed_copy_create`, then `contracts_fee_invoice_create` [key] | Any time, before or after the win. It runs alongside the stages. See "The client agreement" below. |
-| 7 | Set up the project | `projects_partial_update` (Deposit %, target delivery, client-supplied oil, formula ownership), then `projects_skus_create` per SKU | SKUs are added before Approved (`project_stage_invalid` after). Units ordered meet the minimum order (`minimum_order`). Each SKU has a formula version (`provider` `manual` plus the recipe revision id) or the client's oil, and the bottle, cap and packaging have supplier items or manual prices. |
+| 7 | Set up the project | `projects_partial_update` (Deposit %, target delivery, client-supplied oil, formula ownership), then `projects_skus_create` per SKU | SKUs are added before Approved (`project_stage_invalid` after), at any quantity from 1. Each SKU has a formula version (`provider` `manual` plus the recipe revision id) or the client's oil, and the bottle, cap and packaging have supplier items or manual prices. Its packaging spec (batch number, barcode, box and label) and target notes go on the SKU too. |
 | 8 | Cost it | `projects_calculate_create` (stores nothing), then `projects_costing_records_create` [key] | No `cost_missing`. The SKU inputs are saved. The user has `view_cost`. |
 | 9 | Draft the quote | `costing_records_quote_create` [key] (`valid_until`, `tax_rate`) | The project is at Choices received, Quoted or Sampling. The snapshot is not stale (`snapshot_stale` means take a new one). The user has `manage_money` and `view_sales_price`. |
 | 10 | Send the quote | `quotes_send_create` | The quote is a Draft and its total is not negative. It is numbered QT- and gets a PDF (`pdf_attachment_id` → `download_file`). Nothing is emailed: the user sends it. |
 | 11 | Move to Quoted | `projects_move_create` [key] `to` `quoted` | The project's quote is Sent or Accepted (`quote_not_issued`). |
 | 12 | Move to Sampling | `projects_move_create` [key] `to` `sampling` | None. |
+| 12a | Send the sample box | `parcels_create` (`kind` `sample`, the `project`, the contact and address it goes to, its lines), then `parcels_move_create` to `ready` and to `sent` | What is sent is a parcel, not an activity. Sending needs a line, a name and an address line. It ticks the card's step that waits for the samples. |
 | 13 | Record the samples | `project_skus_sample_rounds_create`, then `sample_rounds_decide_create` (`approved` or `rejected` with feedback) | The project is at Sampling. Each round is decided once. After a rejection, add another round. |
 | 14 | Record the acceptance | `quotes_accept_create` | The quote is Sent and still valid (`quote_expired`). An older accepted quote is superseded unless an invoice from it was issued (`quote_already_accepted`). |
 | 15 | Move to Approved | `projects_move_create` [key] `to` `approved` | The quote is accepted (`accepted_quote_missing`) and every live SKU has an approved round (`samples_not_approved`). This drafts the **deposit invoice** (none at 0 %). |
 | 16 | Issue the deposit | `invoices_issue_create` [key] | The invoice is a Draft. `issue_date` is not after today. A rate exists for the issue date. This numbers it INV- and sets the due date. |
 | 17 | Ask for payment | `invoices_payment_requests_create` [key] (`sent_to`, optional `cc` and `message`) | The invoice is Issued and still owes something (`payment_request_nothing_due`). The user confirms the client contact's email, any CC and the message. It emails the amount due, due date and bank details, with the request PDF and the invoice PDF attached; the CC is copied in and replies go to it. Check it with `payment_requests_retrieve` (Queued, Sent or Failed). |
-| 18 | Record the payment | `payments_create` [key] (direction `in`, the client, amount, currency, `allocations` `[{invoice, amount}]`) | The money has arrived. Each allocation is in the invoice's currency and no more than it owes (`over_allocation`). The rest stays on account. |
+| 18 | Record the payment | `payments_create` [key] (direction `in`, the client, amount, currency, `allocations` `[{invoice, amount}]`) | The money has arrived: date it the day it landed. Each allocation is in the invoice's currency and no more than it owes (`over_allocation`). The rest stays on account. For a foreign payment, `amount_gbp` is the GBP that reached the bank. |
 | 19 | Move to Production | `projects_move_create` [key] `to` `production` | The deposit is paid (`deposit_unpaid`). Every SKU has a formula version or client oil (`formula_missing`). With client-supplied oil, its MSDS, SDS and IFRA certificate are Done. |
 | 20 | Move to Balance due | `projects_move_create` [key] `to` `balance_due` | The project is at Production (filling usually runs through work orders first: `find_operations` on work-orders). This drafts the **balance invoice**, which is what the deposit left of the quote (none when the deposit was 100 %). |
 | 21 | Issue, chase and collect the balance | `invoices_issue_create` [key], `invoices_payment_requests_create` [key], `payments_create` [key] | The same as steps 16 to 18. |
@@ -93,7 +97,10 @@ project's revenue (`project_profit`).
    balance with their status, payment status and outstanding amount.
 4. `contracts_list` with `client` (or `source_type` and `source_id`) shows the client's
    contracts with their status, `sends` and `fee_invoice`.
-5. `my_work` and the `money_due` widget show what is due across all projects.
+5. `dashboards_projects_retrieve` with `project` shows the project's money at a glance:
+   expected revenue, what was invoiced, what the client paid and owes, what it has cost, its
+   margin, its next step and what it is `missing`.
+6. `my_work` and the `money_due` widget show what is due across all projects.
 
 ## When something is missing or wrong
 
@@ -109,6 +116,13 @@ project's revenue (`project_profit`).
   already issued.
 - **The project is paused or dropped**: use `projects_move_create` [key] with `on_hold` or
   `cancelled` and a `reason`. To resume, set `to` to the project's `prior_stage`.
+- **The order began outside the ERP** (agreed, paid or already with suppliers before it was
+  entered): follow the backfill-an-order skill. The records that really exist are entered
+  first, then an administrator sets the project's stage with `projects_set_stage_create`
+  [key] and a reason.
+- **A supplier has invoiced for the project** (a printer, a factory, freight): that is a bill
+  whose lines name the project, never a project cost line (the supplier-invoice-to-bill
+  skill).
 - **The contract's wording must change after it was sent**: edit it with
   `contracts_partial_update` and send it again; a Signed or Cancelled one no longer changes (409
   `contract_locked`).

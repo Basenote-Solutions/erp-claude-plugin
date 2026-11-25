@@ -1,6 +1,6 @@
 ---
 name: reports
-description: Covers BaseNote ERP reports and dashboards. That means the reports catalogue (open pipeline, won and lost by source, project profit, revenue by service, stock value, outstanding payments, low stock, compliance outstanding, Radar's runs and cited pages, the accountant export), running a report inline, exporting a CSV, the Home dashboard widgets and the user's own preferences for them, and the This week page (what moved, what to chase, overdue tasks, payments due, and won, invoiced and received against last week). Use it when the user asks for a report, figures, totals, a summary, a CSV or spreadsheet export, what is owed or overdue, profit or margin, revenue, stock value, the pipeline value, what happened this week, what needs chasing, or what needs attention today.
+description: Covers BaseNote ERP reports and dashboards. That means the reports catalogue (open pipeline, won and lost by source, project profit, revenue by service, stock value, outstanding payments, low stock, compliance outstanding, Radar's runs and cited pages, the accountant export), running a report inline, exporting a CSV, the Home dashboard widgets (Needs attention among them) and the user's own preferences for them, the This week page (what moved, what to chase, overdue tasks by person, unlinked cards, still projects, payments due, and won, invoiced and received against last week) and the projects summary (each project's expected revenue, money in and out, margin, next step and what is missing). Use it when the user asks for a report, figures, totals, a summary, a CSV or spreadsheet export, what is owed or overdue, profit or margin, revenue, stock value, the pipeline value, what happened this week, what needs chasing, or what needs attention today.
 ---
 
 # Reports, Home and This week
@@ -40,6 +40,8 @@ it is hidden rather than reporting 0.
   `customised`. The `my_work` tool includes it, with who the user is, their open tasks and their
   unread notifications.
 - `dashboards_week_retrieve` returns the This week page (see below). It takes no parameters.
+- `dashboards_projects_retrieve` returns the projects summary (see "Projects at a glance"):
+  every open project, or one at any stage with `project` (its id).
 - `me_preferences_retrieve` returns the user's own `timezone`, `date_format` and `home_widgets`
   (blank or empty: the default), what is in force under `effective`, the company defaults under
   `site`, and `widgets` (every widget code with its label).
@@ -55,7 +57,7 @@ it is hidden rather than reporting 0.
 |---|---|---|
 | `pipeline` | Open deals by track and stage, with value and GBP value | `track`, `owner` (ids) |
 | `won_lost_by_source` | Deals closed in a range, by track and source, with the win rate and won and lost GBP | `date_from`*, `date_to`*, `track` |
-| `project_profit` | Per project: revenue (issued invoices, net, GBP) less stock used, services billed, expenses and project costs, giving profit and margin | `project`, `stage`, `client` |
+| `project_profit` | Per project: revenue (issued invoices, net, GBP) less stock used, supplier bills (`bills_paid_gbp` and `bills_owed_gbp`), expenses and project cost estimates, giving profit and margin | `project`, `stage`, `client` |
 | `revenue_by_service` | Issued invoices per month and service, net, GBP | `date_from`*, `date_to`*, `service` (`pl`, `blend`, `alchemy`, `upsell`, `other`) |
 | `stock_value` | BaseNote's own stock per item and location at average cost (client stock carries no value) | `location`, `item` |
 | `outstanding_payments` | Issued invoices and posted bills not fully paid, with what is owed, owed in GBP and days overdue | `direction` (`receivable`: owed to us; `payable`: we owe) |
@@ -72,8 +74,13 @@ it is hidden rather than reporting 0.
 Notes on reading the figures:
 
 - `project_profit` needs `view_projects`, `view_sales_price`, `view_cost` and
-  `view_supplier_price`. Stocked purchases count when they are used, not when billed, so nothing
-  counts twice. A project without revenue has no margin.
+  `view_supplier_price`. A project's cost is what leaves the bank, so supplier bills and
+  expenses count with their VAT, while revenue is net. `bills_paid_gbp` is the paid part of
+  the project's bill lines at the GBP that left the bank, `bills_owed_gbp` the unpaid part at
+  the bill's own rate, and `services_cost_gbp` the two together. `project_costs_gbp` is the
+  project's cost lines: estimates of what is not billed yet. Stocked purchases count when
+  they are used, not when billed, so nothing counts twice. A project without revenue has no
+  margin.
 - `won_lost_by_source` counts a deal on the day it closed, in the user's own timezone.
 - Owed in GBP is the document's frozen GBP total less the paid part converted once at its rate. An
   unpaid document owes exactly its GBP total.
@@ -84,6 +91,7 @@ Notes on reading the figures:
 
 | Code | Shows | Needs |
 |---|---|---|
+| `needs_attention` | The weekly review at a glance, as counts: overdue tasks, open cards about no record, projects standing still, deals without a value, and invoices and bills due by Sunday. A count is null where the role may not read what it counts | (none) |
 | `pipeline` | Open pipeline value by track and stage | `view_crm` |
 | `projects` | PL projects by stage, with each one's next task deadline | `view_projects` |
 | `money_due` | Deposit and balance invoices still owed (drafts too), by due date | `view_money` |
@@ -105,12 +113,32 @@ permission. Lists show at most 20 rows; the counts beside them cover everything.
 | Key | Shows | Needs |
 |---|---|---|
 | `figures` | `won` (won deal value), `invoiced` (invoices issued) and `received` (payments in), each `this_week` against `last_week`, in GBP | `view_sales_price`, with `view_crm` for `won` and `view_money` for the other two |
-| `tasks` | Overdue tasks (the count and the oldest) and how many fall due by the week's end | (none) |
+| `tasks` | Overdue tasks (the count and the oldest) and how many fall due by the week's end; `people`: overdue cards by owner, most first; `unlinked` with `unlinked_count`: open cards with no record that nobody has marked as about none | (none) |
 | `deals` | Stage moves this week (all, forward, won, lost, and the latest), new deals and new leads | `view_crm` |
 | `chasing` | Open deals and leads waiting on the client since our last email, 7 to 60 days ago | `view_crm` |
 | `missing` | Open deals without a value (`unpriced`) and without an open task (`no_next_step`) | `view_crm` |
-| `projects` | Project stage moves this week | `view_projects` |
+| `projects` | Project stage moves this week; `stalled` with `stalled_count`: open projects, not on hold, where no stage has changed and no step been ticked for 14 days | `view_projects` |
 | `payments_due` | Invoices (`receivable`) and bills (`payable`) still owed and due by the week's end, overdue ones included, with GBP totals | `view_money` |
+
+## Projects at a glance
+
+`dashboards_projects_retrieve` needs `view_projects`; each amount follows its price permission
+and is absent without it. For every project it gives, in GBP:
+
+- `expected_revenue_gbp`, net: its accepted quote, else its latest sent quote, else the value
+  of the deal it was won from (`expected_revenue_source`: `accepted_quote`, `sent_quote` or
+  `deal`; null when it has none of them);
+- `invoiced_gbp` (issued invoices, net), `client_paid_gbp` (what reached the bank) and
+  `client_owing_gbp` (issued and still unpaid, gross);
+- the costs: `stock_cost_gbp` (stock used, at average cost), `bills_paid_gbp` (supplier
+  bills: what left the bank), `bills_owed_gbp` (still to pay, gross), `expenses_gbp`,
+  `project_costs_gbp` (cost lines: estimates not yet billed) and `total_cost_gbp`;
+- `project_margin_gbp` and `project_margin_pct`: the expected revenue (else what is invoiced)
+  less every cost, shown only to roles that see prices, costs and supplier prices;
+- `next_step` (its next open task), `days_still` (days since its last stage change or ticked
+  step) and `missing`: what it lacks, from `skus`, `quote`, `value`, `next_step` and `costs`.
+
+Read the figures; do not rebuild them from invoices and bills yourself.
 
 ## Common jobs
 
@@ -121,7 +149,8 @@ permission. Lists show at most 20 rows; the counts beside them cover everything.
 2. **"How did we do last quarter?"**: call `revenue_by_service` and `won_lost_by_source` for the
    quarter's dates.
 3. **"Is project PL-… profitable?"**: find the project id, then call `run_report`
-   `project_profit` with `{"project": "<id>"}`.
+   `project_profit` with `{"project": "<id>"}` for the profit on what has been invoiced, or
+   `dashboards_projects_retrieve` with `project` for where it stands against its quote.
 4. **Accountant pack**: export each of the four `accountant_*` reports for the period with
    `reports_runs_create` [key] (a new key per report), then download each CSV.
 5. **"What needs me today?"**: call `my_work`, then summarise the overdue tasks, notifications and
@@ -129,7 +158,10 @@ permission. Lists show at most 20 rows; the counts beside them cover everything.
 6. **"How is this week going?"**: call `dashboards_week_retrieve`, then give the figures against
    last week, what moved, what to chase and what is due. Name the sections the user may not see
    as hidden rather than empty.
-7. **"Put the pipeline on my Home"**: read `available` from `dashboards_home_retrieve`, then send
+7. **"Let's do the weekly review"**: follow the weekly-review skill, which works through
+   This week's overdue cards, unlinked cards, still projects, deals without a value and
+   payments due.
+8. **"Put the pipeline on my Home"**: read `available` from `dashboards_home_retrieve`, then send
    the whole ordered list in `home_widgets` with `me_preferences_partial_update`.
 
 ## Pitfalls
@@ -139,6 +171,8 @@ permission. Lists show at most 20 rows; the counts beside them cover everything.
   only what falls due by the week's end. For everything owed, run `outstanding_payments`.
 - This week's `invoiced` figure is gross, tax included; the `revenue_by_service` report is net.
   Don't set one against the other.
+- The projects summary measures margin against the expected revenue (the quote), the
+  `project_profit` report against issued invoices. Say which one a figure comes from.
 - Don't do arithmetic on hidden columns, and don't present a partial total as the whole. If
   `rows_shown` is set, export the report for the full figures.
 - An export that failed needs narrower parameters, or the permission the user lost. Its

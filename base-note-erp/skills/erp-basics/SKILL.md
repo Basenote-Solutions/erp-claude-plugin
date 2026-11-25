@@ -1,6 +1,6 @@
 ---
 name: erp-basics
-description: How to work in BaseNote ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation). Also what no area skill covers - tasks on any record (the board and its lists, moving and blocking, checklists, comments, files, links, covers, watching, templates and copies, the calendar, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, AI connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
+description: How to work in BaseNote ERP through its connector - which tool to use, how to find and call any operation, and the rules every read and write follows (permissions, decimals, revisions, idempotency keys, errors, confirmation) and the house rules for where each kind of record belongs. Also what no area skill covers - tasks on any record (the board and its lists, moving and blocking, checklists, comments, files, links, covers, watching, templates and copies, the calendar, labels), notifications and their preferences, the import tool (import types, template CSVs, documents read by AI, check and apply), uploading files and their doc types, and settings (company details, users and roles, numbering series, AI connections). Use it whenever the user asks anything about the ERP, its records, reports or tasks, before the area skills, and for a task board or a blocked task, a notification, importing a spreadsheet, PDF or photo, attaching a file, adding or deactivating a user, roles or company settings.
 ---
 
 # BaseNote ERP: the basics
@@ -10,6 +10,35 @@ projects, sourcing, contract manufacturing, the lab and the Alchemy formulation 
 compliance and light money (no ledger). Through the connector you act **as the signed-in user**:
 exactly their role's permissions, every change recorded under their name with the connection source in
 History.
+
+## House rules
+
+How the company keeps its records. Follow them without being asked. When what the user asks
+would put information somewhere else (an invoice typed as a note, an address left in a task),
+say where it belongs and offer to put it there.
+
+1. **Every client, supplier and partner is a party.** Its address, contacts and role are on
+   the party, never in a task note. An address or phone number you come across in a note or a
+   message goes onto the party.
+2. **Every order is a project from its first day**, with its SKUs, quote and stage kept
+   current: the stage says where the order really stands. An order that began elsewhere is
+   caught up with the backfill-an-order skill.
+3. **Money in is recorded when it lands**: a deposit and a balance are invoices with their
+   payments, not notes.
+4. **Money out is recorded when it leaves**: each supplier invoice is a bill with its file,
+   the GBP that actually left the bank (fees included) and the bank's reference, and each
+   line names its project. It is never a project cost line (supplier-invoice-to-bill).
+5. **Every task has a real owner and a link**: owned by the person doing it, linked to its
+   deal or project, with a due date. An outside person is named on the card or the step.
+6. **Every file lives on its record**: an invoice on its bill; designs, briefs and approvals
+   on the project. You attach it, or ask the user for it in the conversation.
+7. **Briefs and handovers start from the ERP**: when a brief needs something the ERP does not
+   hold, add it to the ERP first, then print the brief (brief-an-outside-person).
+8. **A weekly review** clears overdue tasks, projects with no movement, deals with no value
+   and cards with no record (weekly-review).
+
+Figures follow the same idea: a total, a conversion, a margin or how closely two perfumes
+match comes from the ERP, never from your own working.
 
 ## Which tool
 
@@ -21,11 +50,14 @@ History.
 | Figures across records | `run_report` (no name: the catalogue and its parameters) |
 | Anything else | `find_operations` → `describe_operation` → `read` (GET) or `write` |
 | An area's rules and steps, when its skill is not loaded | `how_to` (topic = the skill's name) |
-| A PDF, attachment or export | `download_file`; to add one, `upload_file` then link it with `write` (a selected ChatGPT attachment: pass `file`; a file on disk: give its `size`, run the answer's curl in your sandbox, then finish with `attachment_id`) |
+| A PDF, attachment or export | `download_file` |
+| A file onto a record | For a project, task, bill or expense: `upload_file` with `record_type` and `record_id`, or `ask_for_file` when the user holds the file. Any other record: `upload_file`, then link it with `write`. (A selected ChatGPT attachment: pass `file`; a file on disk: give its `size`, run the answer's curl in your sandbox, then finish with `attachment_id`) |
 
 Area skills name the operations for each job: crm-and-quotes, marketing-radar, pl-projects,
 sourcing, manufacturing, stock, lab-and-alchemy, compliance, money, reports; and the
-workflows lead-to-invoice, brief-to-formula, buy-to-stock, fill-to-ship, radar-scan.
+workflows lead-to-invoice, backfill-an-order, supplier-invoice-to-bill,
+brief-an-outside-person, weekly-review, brief-to-formula, buy-to-stock, fill-to-ship,
+radar-scan.
 
 ## Calling operations
 
@@ -96,12 +128,32 @@ user owns, is a member of or has a step on always shows, and a task outside thei
 
 - **Read**: `tasks_list` (filters: `owner` or `person`, a user id or `me`, where person also
   finds tasks they are a member of; `status`, where `open` means To do, Doing or Blocked; `due`
-  `overdue`, `today` or `week`; `label`; `record_type` with `record_id`; `search`),
-  `business`, a business id; `archived` true for the archived tasks instead of the live ones),
+  `overdue`, `today` or `week`; `label`; `record_type` with `record_id`; `search`;
+  `business`, a business id; `contact`, an outside person's contact id; `unlinked` true for
+  the open tasks nobody has linked or marked as about no record; `archived` true for the
+  archived tasks instead of the live ones),
   `tasks_retrieve`, and `tasks_board_retrieve`: the same filters but status, as the board's own
   lists in order (`task_lists_list`; each list has a `status`, which is what its tasks are),
   each with its `count` and at most 200 cards in their hand-made order. Done tasks stay on the
   board until they are archived.
+- **What a task is about**: a new task says so. `tasks_create` takes `record_type` with
+  `record_id` (the types: `task_record_types_list`), or `no_record: true` for one about no
+  record; with neither it answers 422 on `record_type`. Ask which deal or project it is for
+  before choosing `no_record`. `task_records_retrieve` (`number`) finds the record a number
+  names (a project's PL-, a deal's D-, a purchase order, work order or parcel; 404 when
+  nothing the user may read carries it). `tasks_record_update` (`expected_revision` with
+  `record_type` and `record_id`, or with `no_record: true`) links a task later, to a record
+  its owner, members and step people may all read; a record's own card keeps its record.
+- **Outside people**: a task or a step names the outside person doing it with `contact_id`,
+  a contact with no login (`contacts_list`; `role=partner` for the company's partners). The
+  answer shows them as `contact_name`. The owner stays a user, and the person gets the work
+  on a printed brief (brief-an-outside-person).
+- **Steps that tick themselves**: a step with `completes_on` waits for an action on the
+  task's record and is ticked, by whoever did it, when that action is recorded: `quote_sent`,
+  `deposit_invoice_issued`, `balance_invoice_issued`, `rfq_sent`, `po_issued`, `sample_sent`,
+  `sample_decided`, `artwork_approved` or `shipped` (`task_actions_list` names them). So do
+  the action. Do not tick such a step by hand: the tick would say something happened that
+  its record does not show.
 - **Move**: `tasks_move_create` with `expected_revision` and either `list_id` (and `before_id`,
   the task it sits before; null: the end) or `status` (`open`, `doing`, `blocked` or `done`: the
   first list of that status). A list of status `blocked` needs `blocked_reason` and whom we wait
@@ -116,18 +168,20 @@ user owns, is a member of or has a step on always shows, and a task outside thei
   `task_lists_archive_create` and `task_lists_unarchive_create` (its tasks leave and return with
   it), `task_lists_archive_cards_create` (archives every task of the list).
 - **Edit**: `tasks_update` is a PUT: send `title`, `notes`, `owner_id`, `due_date` and `priority`
-  (`low`, `normal`, `high`) again with `expected_revision`; `member_ids`, `label_ids` and
-  `business_id` left out stay as they are. Owner and members are active users who can read the
+  (`low`, `normal`, `high`) again with `expected_revision`; `member_ids`, `label_ids`,
+  `business_id` and `contact_id` left out stay as they are (`contact_id` null: nobody
+  outside). Owner and members are active users who can read the
   linked record. Every task has a business (`task_businesses_list`; the first is the default):
   `tasks_create` takes `business_id` and `list_id` (never a Blocked list), both optional.
 - **Checklists**: a task has several named checklists (`checklists` on the task, each with its
   `items`, `done` and `total`). `tasks_checklists_create` (`name`) adds one;
   `task_checklists_update` renames it and `task_checklists_destroy` removes it with its steps.
-  `task_checklists_items_create` (path `checklist_id`; `text`, optional `owner_id` and
-  `due_date`) adds a step; `tasks_checklist_create` adds one to the first checklist (made when
-  there is none). `task_checklist_update` (path `item_id`) changes what it names and leaves the
-  rest: `done`, `text`, `owner_id` and `due_date` (null clears either), `before_id` (the step it
-  sits before; null: the end). `task_checklist_destroy` removes a step. They take no revision
+  `task_checklists_items_create` (path `checklist_id`; `text`, optional `owner_id`,
+  `due_date`, `contact_id` and `completes_on`) adds a step; `tasks_checklist_create` adds one
+  to the first checklist (made when there is none). `task_checklist_update` (path `item_id`)
+  changes what it names and leaves the rest: `done`, `text`, `owner_id`, `due_date` and
+  `contact_id` (null clears any of the three), `completes_on`, `before_id` (the step it sits
+  before; null: the end). `task_checklist_destroy` removes a step. They take no revision
   and answer the whole task. A step's person is told when it is assigned, due and overdue; a
   task's `next_step` is its open step due soonest, and a task is `overdue` when it or an open
   step is. `person` on `tasks_list` also finds tasks someone has an open step on.
@@ -145,26 +199,32 @@ user owns, is a member of or has a step on always shows, and a task outside thei
 - **Templates and copies**: `tasks_template_update` (`is_template`) makes a task a pattern to
   copy: it stays on the board, is never due or overdue and is left off the calendar (a
   record's own card cannot be one); `tasks_list` takes `template` true or false.
-  `tasks_copy_create` (optional `title` and `list_id`) makes a new task owned by the user from
-  any task: its notes, priority, business, record, members, labels, cover colour, links and
-  checklists, every step unticked and undated; never its due date, comments or files.
+  `tasks_copy_create` (optional `title` and `list_id`; `record_type` with `record_id` for
+  the record the copy is about, as when a template card is used on a project) makes a new
+  task owned by the user from any task: its notes, priority, business, record, members,
+  labels, cover colour, links and checklists, every step unticked and undated with its
+  outside person and its action kept; never its due date, comments or files.
 - **Calendar**: `tasks_calendar_retrieve` (`month` as YYYY-MM, default the user's own month,
   with the filters of `tasks_list`): whole weeks, Monday first, each day with the tasks due and
   the open steps due.
-- **Files**: `upload_file` with doc_type `task`, then `tasks_files_create` (`attachment_id`);
-  `tasks_files_list`, then `download_file`. A file belongs to one task: upload it again for
-  another.
+- **Files**: `upload_file` with `record_type` `tasks` and `record_id` stores a file and puts
+  it on the task in one call (`ask_for_file` when the user holds it). `tasks_files_create`
+  (`attachment_id`) links an upload of doc_type `task` made without them. `tasks_files_list`,
+  then `download_file`. A file belongs to one task: upload it again for another.
 - **Labels**: `task_labels_list`, `task_labels_create` (`name`, `colour` `blue`, `green`,
   `amber`, `red`, `grey`, `purple`, `teal`, `pink`, `orange` or `lime`),
   `task_labels_archive_create`; a task takes them as `label_ids`. An archived label stays on the
   tasks that carry it.
 - `task_record_types_list` names the record types a task may link to (`crm.deal`,
-  `projects.project`, `manufacturing.work_order`, `compliance.item` and others).
+  `projects.project`, `projects.project_sku`, `crm.parcel`, `sourcing.purchase_order`,
+  `manufacturing.work_order`, `compliance.item` and others).
 
 ## Notifications
 
 Notifications are in-app only (never email) and each user's own. `my_work` already returns the
-unread ones (the newest 30) with the open tasks the user owns; use the operations for the rest:
+unread ones (the newest 30) with the open tasks the user owns; use the operations for the rest.
+Besides the task and record events, an owner is told once when a task has been overdue for a
+week and when nothing has moved their open project for 14 days.
 
 - `notifications_list` (newest first; `unread=true` for unread only): each has a `title`,
   `event_type`, `document_number`, `read_at`, and the `entity_type` and `entity_id` of the record
@@ -184,8 +244,11 @@ needs its own area's permissions, and uploading needs `upload_attachments`.
    ones, `help` per column and `lookups` (columns whose cells name an existing code or name).
    The types are `tasks`, `parties`, `leads`, `deals`, `activities`, `materials`, `suppliers`,
    `supplier_prices`, `formulation_materials`, `material_compositions`,
-   `allergen_declarations`, `regulatory_rules`, `accord_trials` and `opening_stock` (the stock
-   skill walks through that one).
+   `allergen_declarations`, `regulatory_rules`, `accord_trials`, `opening_stock` (the stock
+   skill walks through that one) and `supplier_bill` (a supplier's invoice into a draft
+   bill: the supplier-invoice-to-bill skill). The list this operation answers is the one to
+   go by: it also names the type that turns a bank statement's CSV export into supplier
+   payments, which the ERP reads itself.
 2. `upload_file` with doc_type `import` (CSV, PDF, PNG or JPEG), then `imports_create` [key]
    (`attachment_id`, `import_type` or `""` to detect it, `filename`). One import per upload:
    upload the file again for another.
@@ -216,17 +279,31 @@ import is not undone as a whole.
 
 ## Uploads and doc types
 
-`upload_file` needs `upload_attachments`. Its `doc_type` decides what the file may be, who may
-open it and which operation links it: an upload of the wrong doc type is refused when linked, so
-upload it again with the right one. Each takes a PDF, PNG or JPEG of up to 20 MB unless noted;
-a refused upload answers 422 `upload_rejected` with `details.reason` (`doc_type`,
-`content_type`, `size`...).
+A file belongs on its record. For a **project, task, bill or expense** one call does it:
+
+- `upload_file` with `record_type` (`projects`, `tasks`, `bills` or `expenses`) and
+  `record_id` stores a file you hold and puts it on that record. The doc type is the record's
+  own (`project`, `task`, `supplier_bill`, `expense_receipt`), so leave `doc_type` out.
+- `ask_for_file` (`record_type`, `record_id`, and `what`: the file wanted) is for a file the
+  user holds: it shows an upload box in the conversation where the app has one and always
+  answers `upload_page`, a link to the same upload in the ERP. Either way the file lands on
+  the record: read the record to confirm, and ask for nothing to be pasted back.
+- Never tell the user to go and find a record's Files section: attach the file, or ask for
+  it with `ask_for_file`.
+
+Any other record takes two steps: `upload_file` with the `doc_type` below, then the operation
+that links it. Uploading needs `upload_attachments`. The `doc_type` decides what the file may
+be, who may open it and which operation links it: an upload of the wrong doc type is refused
+when linked, so upload it again with the right one. Each takes a PDF, PNG or JPEG of up to
+20 MB unless noted; a refused upload answers 422 `upload_rejected` with `details.reason`
+(`doc_type`, `content_type`, `size`...).
 
 - `general`: a file with no record of its own, shared with every ERP user.
 - `task` → `tasks_files_create`: readers of the record the task is linked to.
 - `import` (also CSV; a CSV, or a document the AI reads, of at most 10 MB) →
   `imports_create` [key]: holders of the import type's permissions.
-- `project` → `projects_documents_create`: `view_projects`.
+- `project` → `projects_documents_create`: `view_projects`. `artwork` (a SKU's box or label
+  design) → `project_skus_artwork_create`: `view_projects`.
 - `work_order` → `work_orders_documents_create`: `view_manufacturing`.
 - `compliance_document`, or `compliance_formula_document` for a PIF, CPSR or allergen
   declaration → `compliance_items_attachments_create`: `view_compliance`, the second also
@@ -247,8 +324,10 @@ a refused upload answers 422 `upload_rejected` with `details.reason` (`doc_type`
   `view_formula_pct`.
 - `assistant` (up to 5 MB): Alchemy assistant chat attachments, `use_assistant`.
 
-Quote, invoice, payment-request, contract and purchase-order PDFs and report exports are made by
-the ERP: fetch them with `download_file`, never upload them.
+Quote, invoice, payment-request, contract and purchase-order PDFs, a parcel's packing list, a
+project's packaging and sourcing briefs, a brief for a person and report exports are made by
+the ERP: fetch them (`download_file`; a brief for a person with `handovers_pdf_retrieve`),
+never upload them.
 
 ## Settings and reference data
 

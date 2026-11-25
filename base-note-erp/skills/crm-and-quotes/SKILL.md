@@ -1,6 +1,6 @@
 ---
 name: crm-and-quotes
-description: Covers BaseNote ERP sales work. That means leads (qualify, disqualify, convert), deals on the Private Label, Blend Engine, Alchemy Engine and Upsell tracks with their offered packages, moving deals to Won or Lost, activities, clients with their contacts, addresses and identifiers, client quotes (draft, Mark sent, accept, decline), client contracts made from house templates (edit, preview, email, signed copy, cancel, fee invoice), and the CRM settings (contract templates, picklists, tracks and stages). Use it when the user mentions a lead, prospect, deal, pipeline, stage, won, lost, upsell, an offered package or option, follow-up, call notes, a client contact or address, quoting a client, a contract, agreement, NDA, signed copy or contract template.
+description: Covers BaseNote ERP sales work. That means leads (qualify, disqualify, convert), deals on the Private Label, Blend Engine, Alchemy Engine and Upsell tracks with their offered packages, moving deals to Won or Lost, activities, parcels (samples and anything else sent or carried, with a packing list), clients and partners with their contacts, addresses and identifiers, client quotes (draft, Mark sent, accept, decline), client contracts made from house templates (edit, preview, email, signed copy, cancel, fee invoice), and the CRM settings (contract templates, picklists, tracks and stages). Use it when the user mentions a lead, prospect, deal, pipeline, stage, won, lost, upsell, an offered package or option, follow-up, call notes, a sample to send, a parcel, a packing list, a client contact or address, a partner, quoting a client, a contract, agreement, NDA, signed copy or contract template.
 ---
 
 # CRM, deals, quotes and contracts
@@ -46,8 +46,13 @@ agreements a client signs, written from a house template and emailed as a PDF.
 - **Deal**: numbered D-00001 onwards, with a value, currency and rate (giving Value GBP), an
   expected close date, a source, an owner and an outcome. Its **options** are the packages
   offered: alternatives, never summed.
-- **Activity**: Call, Email, Meeting, Note or Sample. Activities are never edited or deleted;
-  only a call's, meeting's or sample's status changes.
+- **Activity**: Call, Email, Meeting or Note. Activities are never edited or deleted; only a
+  call's or meeting's status changes. Sample activities are the older record of a sample and
+  stay as history: a sample sent now is a parcel.
+- **Parcel**: numbered PCL-. Anything the company sends or has carried: a Sample, Components,
+  a Reference item, Documents or Other. Preparing → Ready → Sent → Delivered, or Cancelled
+  before it is delivered. It has whom it goes to, a delivery address copied onto it, who
+  carries it and its lines.
 - **Quote**: Draft → Sent (numbered QT-, PDF made) → Accepted, Declined or Expired. An accepted
   quote becomes Superseded when another one is accepted for the same record.
 - **Contract**: Draft → Sent (numbered AGR- at its first send) → Signed. A Draft or Sent one can
@@ -70,7 +75,8 @@ agreements a client signs, written from a house template and emailed as a PDF.
   expected close, source, upsell type, parent deal, notes); `deals_move_create` [key];
   `deals_summary_retrieve` and `tracks_board_retrieve` (counts and GBP totals per stage; null
   when nothing is priced; each card's follow-up: `chase`, `waiting_on`, last email, next task,
-  latest call and sample).
+  latest call and sample, its newest live `parcel`, and `has_value`: whether the deal has a
+  value, shown to every reader, so "no value" is never confused with a hidden one).
 - **Offered packages**: `deals_options_create` (`expected_revision`: the deal's; `name` and
   `currency` required; `development_cost`, `unit_price`, `quantity`, `moq`, `bottle_size_ml`,
   `payment_terms`, `delivery_included`, `vat_included`, `preferred`, `notes`);
@@ -79,22 +85,28 @@ agreements a client signs, written from a house template and emailed as a PDF.
 - **Activities**: `activities_list` (filter by deal, lead, client, project, kind or
   `created_by`), `activities_create` (an email needs `direction` sent or received, which updates
   the deal's or lead's follow-up; a call or meeting takes a `status`, booked when dated ahead,
-  else held; kind `sample` needs `sample_type` existing or development),
-  `activities_status_create` (`status`: a call's or meeting's `booked`, `held` or `rearrange`, a
-  sample's `sent` or `feedback`), `activities_retrieve`.
+  else held), `activities_status_create` (`status`: a call's or meeting's `booked`, `held` or
+  `rearrange`), `activities_retrieve`. A sample that goes out is a parcel, not an activity.
+- **Parcels**: `parcels_list` (filter by `deal`, `lead`, `client`, `project`, `kind` or
+  `state`), `parcels_create`, `parcels_retrieve`, `parcels_partial_update` (a PATCH with
+  `expected_revision`), `parcels_move_create` (`expected_revision`, `to`; `reason`, `sent_on`,
+  `delivered_on`), `parcels_feedback_create` (`expected_revision`, `feedback`),
+  `parcels_pdf_create` (the packing list).
 - **Clients and contacts**: `parties_list` (filter by `search`, exact `name`, `role` or
   `status`), `parties_create` (`display_name`, `kind` `organisation` or `person`, `roles`
-  including `client`; optional `payment_terms_days` and `vat_number`), `parties_retrieve`,
-  `parties_update` (a PUT; `roles` replaces the set); `parties_contacts_create`,
-  `party_contacts_update`, `party_contacts_destroy`; `contacts_list` (every party's contacts, by
-  `search`).
+  from `client`, `supplier`, `lead` and `partner`; optional `payment_terms_days` and
+  `vat_number`), `parties_retrieve`, `parties_update` (a PUT; `roles` replaces the set);
+  `parties_contacts_create`, `party_contacts_update`, `party_contacts_destroy`;
+  `contacts_list` (every party's contacts, by `search`, or by `role`: the contacts of the
+  parties holding it).
 - **Addresses and identifiers**: `parties_addresses_create`, `party_addresses_update`,
   `party_addresses_destroy` (`kind` `billing`, `shipping`, `registered` or `other`; one to four
   `lines`; `country_code` as two capital letters); `parties_identifiers_create`,
   `party_identifiers_update`, `party_identifiers_destroy` (`scheme`, an identifier scheme's code,
   and `value`, checked against the scheme's pattern).
-- **Follow-ups**: `tasks_create` (title, `owner_id` and `due_date`; link it with `record_type`
-  from `task_record_types_list` and `record_id`); `tasks_done_create`.
+- **Follow-ups**: `tasks_create` (title, `owner_id` and `due_date`, and what it is about:
+  `record_type` from `task_record_types_list`, such as `crm.deal`, with `record_id`; a task
+  with neither a record nor `no_record: true` is refused); `tasks_done_create`.
 - **Quotes**: `quotes_list` (filter by status, `service`, client, `q`, or `source_type` with
   `source_id`); `quotes_create`; `quotes_retrieve`; `quotes_update` and `quotes_destroy` (drafts
   only); `quotes_send_create` (Mark sent); `quotes_accept_create`; `quotes_decline_create` (needs
@@ -156,6 +168,38 @@ agreements a client signs, written from a house template and emailed as a PDF.
   or currency (422): edit or unmark the option. Dropping an option leaves the value as it was.
 - **Activity**: needs kind, subject and one of deal, lead, client or project. One on a deal takes
   the deal's client.
+- **Partners**: a party with the `partner` role is someone outside the company who works
+  with it and is neither client nor supplier, such as a person who runs errands or sourcing.
+  They have no login: a task card or step names their contact, and they get their work as a
+  printed brief (the brief-an-outside-person skill).
+- **Parcel**: `view_crm` to read, `manage_crm` to write.
+  - It needs a `kind` (`sample`, `components`, `reference`, `documents` or `other`) and what
+    it is about: a `deal`, `lead`, `client` or `project` (a deal gives its client). A sample
+    also needs `sample_type` (`existing` or `development`).
+  - Deliver-to is `to_contact` (any party's contact; it fills `to_name` and `to_phone` where
+    blank) and an address. `address_id` copies one of that contact's party's addresses (with
+    no contact: the client's) onto the parcel, over anything typed, and the copy then stays
+    as it is. Keep the address on the party (`parties_addresses_create`) and copy it; type
+    `to_lines`, `to_city`, `to_postal_code` and `to_country_code` only where there is no
+    party, as for a lead.
+  - `carrier_contact` is the outside person carrying it, or give `courier` and `tracking_no`;
+    `from_text` says where it is collected.
+  - `lines` is the whole list, each an `item`, or a `code` and `description`, with a `qty`.
+    They change only while the parcel is Preparing or Ready, and a cancelled parcel not at
+    all (409 `parcel_locked`).
+  - `parcels_move_create` goes one state forward, or one back with a `reason`; `cancelled`,
+    with a `reason`, from any state before Delivered. Sent needs a line, a `to_name` and an
+    address line (422 naming `lines`, `to_name` or `to_lines`) and takes `sent_on` (blank:
+    today); Delivered takes `delivered_on`.
+  - Sending a sample ticks the step waiting for the samples on its project's and its deal's
+    cards, and it becomes the deal card's sample.
+  - `parcels_feedback_create` records what they said of a sample that was sent or delivered
+    (again: the newer text).
+  - `parcels_pdf_create` queues the packing list (the address and the lines, each with a box
+    to tick). Read the parcel again for `pdf_attachment_id` and fetch it with
+    `download_file`. Nothing is emailed.
+  - A parcel moves no stock and carries no cost: a courier's charge is an expense on the
+    project (money skill).
 - **Client records**: every contact, address and identifier write sends the party's own
   `expected_revision` and answers with the whole party. Quote and invoice PDFs print, and a new
   contract's address placeholder takes, the client's `billing` address, else its `registered`
@@ -242,6 +286,11 @@ agreements a client signs, written from a house template and emailed as a PDF.
    to Contract signed with `deals_move_create` [key].
 10. **Bill the contract's fee**: `contracts_fee_invoice_create` [key], then issue the draft
     invoice (see the money skill).
+11. **Send a sample**: check the contact's address is on the client (`parties_retrieve`);
+    `parcels_create` (`kind` `sample`, `sample_type`, the `deal` or `project`, `to_contact`,
+    `address_id`, `lines`); `parcels_move_create` to `ready`, then to `sent` when it leaves
+    and to `delivered` when it arrives; later `parcels_feedback_create` with what the client
+    said.
 
 ## Pitfalls
 
@@ -253,6 +302,12 @@ agreements a client signs, written from a house template and emailed as a PDF.
 - A contact that a deal, project, quote, invoice or contract names cannot be removed (409
   `party_child_in_use`).
 - Search before `parties_create` so you don't make a duplicate client.
+- A sample logged as an activity has no address, contents or packing list and ticks no step:
+  make the parcel.
+- An address or phone number found in a note or a message goes on the party
+  (`parties_addresses_create`, `parties_contacts_create`), not back into a note.
+- A deal without a value is flagged (`has_value` false), never stopped: ask for the value
+  rather than leaving it.
 - The seeded templates leave the deal's own details as blanks in square brackets (`[number]`,
   `[days]`): fill them in the `body` before sending.
 - A contract is filled when it is made. A contact, address or fee added to the client or the
@@ -266,7 +321,8 @@ Converting or disqualifying a lead; creating, editing or moving a deal (above al
 creates a project or licence, or to Lost); adding, changing or dropping an offered package (a
 preferred one resets the deal's value); sending, accepting, declining or deleting a quote;
 creating, editing, sending, signing or cancelling a contract, or drafting its fee invoice;
-removing a contact, address or identifier; changing a template, picklist, track or stage. State
+creating, moving or cancelling a parcel and recording its feedback; removing a contact,
+address or identifier; changing a template, picklist, track or stage. State
 the record, the change and its consequence, then wait for a yes.
 
 Sending a contract emails a client and cannot be recalled: show the recipient, the CC and the

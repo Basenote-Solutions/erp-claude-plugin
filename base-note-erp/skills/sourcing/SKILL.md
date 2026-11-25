@@ -1,6 +1,6 @@
 ---
 name: sourcing
-description: Buying in BaseNote ERP - suppliers and supplier items, a supplier's ids in other systems (external refs), supplier availability, supplier price versions with MOQ tiers (draft, publish, cancel, restore), RFQs, supplier quotes, compare and award, purchase orders (issue, close, cancel, PO PDF), goods receipts, shipments and bills from POs. Use when the user mentions a supplier, vendor, RFQ or request for quote, a quote comparison, MOQ or price tiers, a price list or price version, a PO or purchase order, a delivery, goods receipt or GRN, or shipment tracking.
+description: Buying in BaseNote ERP - suppliers and supplier items, a supplier's ids in other systems (external refs), supplier availability, supplier price versions with MOQ tiers (draft, publish, cancel, restore), RFQs, supplier quotes, compare and award, purchase orders (issue, close, cancel, PO PDF), goods receipts, shipments and bills from POs, and a printer's or packer's quote as free-text lines. Use when the user mentions a supplier, vendor, a printer's quote, RFQ or request for quote, a quote comparison, MOQ or price tiers, a price list or price version, a PO or purchase order, a delivery, goods receipt or GRN, or shipment tracking.
 ---
 
 # Sourcing: suppliers, prices, RFQs, orders and receipts
@@ -86,8 +86,10 @@ RFQs and supplier quotes
   a `spec` with its `uom`, and 1 to 10 `tiers` such as `["500","1000","2000"]`), `rfqs_update`
   (PUT, expected_revision; a sent RFQ keeps its lines and project: 409 `sourcing_document_state`).
 - `rfqs_send_create` (expected_revision): marks it Sent once it has a line and an invited
-  supplier. **Nothing is emailed**: the user sends the request themselves. `rfqs_close_create`
-  (expected_revision) closes a draft or sent RFQ: no more quotes against it.
+  supplier. **Nothing is emailed**: the user sends the request themselves. On an RFQ with a
+  `project` it ticks the step of the project's card that waits for quotes to be requested.
+  `rfqs_close_create` (expected_revision) closes a draft or sent RFQ: no more quotes against
+  it.
 - `supplier_quotes_create` (`supplier`, optional `rfq`: it must be Sent and the supplier invited,
   `supplier_reference`, `quoted_on`, `valid_until`, `currency`, `fx_rate`, the supplier's file as
   `attachment`, lines: the `rfq_line` answered or an item or spec, `tier_qty`,
@@ -113,7 +115,8 @@ Purchase orders
   a stocked item (received into stock) or a description (a service such as filling: billed, never
   received), qty, unit price, tax rate (blank: the default rate).
 - `purchase_orders_issue_create` [key] (expected_revision): numbers it PO- and has the worker
-  render its PDF.
+  render its PDF. On an order with a `project` it ticks the step of the project's card that
+  waits for purchase orders to be issued.
 - `purchase_orders_pdf_retrieve`, or `download_file` with `purchase_order_id`: a 5-minute link;
   404 `purchase_order_pdf_not_ready` until the worker has made it (retry shortly).
 - `purchase_orders_close_create` [key]: ends an issued, partly received or received order (a
@@ -123,7 +126,9 @@ Purchase orders
 - `purchase_orders_bill_create` [key] (`bill_date`, `supplier_ref`, `due_date`): a draft bill of
   what the lines have not been billed yet, at the order's prices and tax rates, for an issued,
   received or closed order; it answers the bill's id. 409 `nothing_to_bill` when all is billed.
-  Posting and paying it: `bills_post_create` [key], then the money skill.
+  The bill counts for the order's project unless a line names another
+  (`bills_projects_create` [key]). Posting and paying it: `bills_post_create` [key], then the
+  supplier-invoice-to-bill skill from its step 5 (the file, the plan, the payments).
 
 Goods receipts and shipments
 - `goods_receipts_create` [key]: `purchase_order` (Issued or Partially received), `location`,
@@ -184,6 +189,14 @@ Goods receipts and shipments
    `revision`); check the draft with the user; `supplier_price_versions_publish_create` [key].
 7. **Correct a published price:** `supplier_price_versions_restore_create` from it, change the
    draft's prices and publish; cancel the wrong version if it must stop applying.
+8. **A printer's or packer's quote** (boxes, labels, printing, packing: things that are not
+   catalog items) runs the same chain on free-text lines: `rfqs_create` with the `project`
+   and a `spec` line per thing wanted (its `uom` and `tiers`), `rfqs_send_create`,
+   `supplier_quotes_create` answering those lines, `supplier_quotes_award_create` [key] with
+   `draft_po` (a spec line becomes a description line on the order, and its price is not
+   published as a supplier price), `purchase_orders_issue_create` [key], then the supplier's
+   invoice as a bill with `purchase_orders_bill_create` [key]. A description line is billed
+   and never received into stock.
 
 ## Pitfalls
 
@@ -195,6 +208,8 @@ Goods receipts and shipments
   whose approval is `approved` or `not_required`: set it with `supplier_items_update`.
 - Supplier names and prices are confidential: do not put them in anything for outsiders unless the
   user asks.
+- A supplier's invoice is a bill (from its purchase order, or entered on its own: the
+  supplier-invoice-to-bill skill), never a project cost line.
 
 ## Confirm with the user before
 
